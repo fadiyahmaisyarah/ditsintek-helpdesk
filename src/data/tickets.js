@@ -1,0 +1,83 @@
+// Dummy/mock data untuk tiket.
+// NOTE: Ke depannya, data ini bisa diganti dengan hasil fetch/axios ke REST API,
+// misalnya lewat services/ticketService.js (lihat src/services/api.js).
+const TICKETS = [
+  {
+    id: 'TKT-2461',
+    name: 'Rani Kusuma',
+    role: 'mhs',
+    kategori: 'Non Akademik',
+    pic: 'Dian Pratiwi',
+    wait: 160,
+    status: 'new',
+    createdAt: '17 Jul, 09:12',
+    source: 'Bot Telegram',
+    messages: [
+      { who: 'user', text: 'Password SIA aku salah terus padahal udah bener, akun ke-lock.' },
+    ],
+    notes: [
+      {
+        text: 'Sudah dicek, akun memang ter-lock 3x percobaan salah. Perlu reset manual dari admin SIA.',
+        author: 'Dian Pratiwi',
+        time: '10:02',
+      },
+    ],
+  },
+  {
+    id: 'TKT-2459',
+    name: 'Fajar Nugroho',
+    role: 'mhs',
+    kategori: 'Akademik',
+    pic: 'Reza Firmansyah',
+    wait: 65,
+    status: 'progress',
+    createdAt: '17 Jul, 10:20',
+    source: 'Bot Telegram',
+    messages: [{ who: 'user', text: 'KRS aku kok gak muncul ya di portal?' }],
+    notes: [],
+  },
+  {
+    id: 'TKT-2458',
+    name: 'Sari Wulandari',
+    role: 'tendik',
+    kategori: 'Non Akademik',
+    pic: 'Dian Pratiwi',
+    wait: 48,
+    status: 'progress',
+    createdAt: '17 Jul, 10:44',
+    source: 'Bot Telegram',
+    messages: [{ who: 'user', text: 'E-office saya gak bisa dibuka dari kemarin, error terus.' }],
+    notes: [],
+  },
+  {
+    id: 'TKT-2455',
+    name: 'Bagas Aditya',
+    role: 'mhs',
+    kategori: 'Lainnya',
+    pic: '—',
+    wait: 12,
+    status: 'new',
+    createdAt: '17 Jul, 11:20',
+    source: 'Bot Telegram',
+    messages: [{ who: 'user', text: 'Email kampus saya gak kebuka, katanya limit login.' }],
+    notes: [],
+  },
+  {
+    id: 'TKT-2450',
+    name: 'Putri Anjani',
+    role: 'mhs',
+    kategori: 'Non Akademik',
+    pic: 'Reza Firmansyah',
+    wait: 0,
+    status: 'done',
+    createdAt: '16 Jul, 15:03',
+    source: 'Bot Telegram',
+    messages: [
+      { who: 'user', text: 'Minta reset akun SSO dong, lupa total.' },
+      { who: 'staff', text: 'Sudah direset, silakan cek email untuk password sementara ya.' },
+    ],
+    notes: [{ text: 'Direset manual, sudah dikonfirmasi user via chat.', author: 'Dian Pratiwi', time: '15:40' }],
+  },
+];
+
+export default TICKETS;
