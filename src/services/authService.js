@@ -1,10 +1,14 @@
 import api from './api';
 
-export async function login({ username, password, role }) {
+export const login = async (username, password, role) => {
   try {
-    const response = await api.post('/auth/login', { username, password, role });
+    const response = await api.post('/login', {
+      username,
+      password,
+      role,
+    });
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Username atau kata sandi salah!');
+    throw error.response?.data || { message: 'Terjadi kesalahan pada server' };
   }
-}
+};
