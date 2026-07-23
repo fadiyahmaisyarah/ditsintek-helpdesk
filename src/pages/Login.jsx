@@ -23,14 +23,25 @@ export default function Login() {
       .slice(0, 3);
   }, [tickets]);
 
-  async function handleLogin() {
+async function handleLogin() {
     const nextErrors = { email: !email.trim(), pass: !password.trim() };
     setErrors(nextErrors);
     if (nextErrors.email || nextErrors.pass) return;
 
-    const user = await login({ email, password, role: pendingRole });
-    navigate('/dashboard');
-    toast(`Selamat datang kembali, ${user.role === 'admin' ? 'Dian' : 'Reza'}!`);
+    try {
+      // Panggil API login
+      const user = await login({ email, password, role: pendingRole });
+      
+      // HANYA jika login berhasil, jalankan ini:
+      if (user) {
+        navigate('/dashboard');
+        toast(`Selamat datang kembali, ${user?.role === 'admin' ? 'Dian' : 'Reza'}!`);
+      }
+    } catch (err) {
+      // Jika kredensial salah / API kirim status error (400/401/500):
+      console.error(err);
+      toast(err.response?.data?.message || err.message || 'Email atau password salah!');
+    }
   }
 
   return (

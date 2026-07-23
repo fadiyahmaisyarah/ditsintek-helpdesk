@@ -1,16 +1,14 @@
-// import api from './api';
+import api from './api';
 
-// Mock login: menyimulasikan panggilan API dengan delay 500ms, sama seperti
-// versi HTML/JS aslinya. Ganti body fungsi ini dengan panggilan
-// `api.post('/auth/login', { email, password, role })` saat backend siap.
-export function login({ email, password, role }) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        role: role || 'helpdesk',
-        name: role === 'admin' ? 'Dian Pratiwi' : 'Reza Firmansyah',
-        email,
-      });
-    }, 500);
-  });
+export async function login({ email, password, role }) {
+  try {
+    // Panggil API login asli ke backend Railway milik Ed
+    const response = await api.post('/auth/login', { email, password, role });
+    
+    // Kirim data user jika backend bilang password BENAR
+    return response.data;
+  } catch (error) {
+    // Lempar error jika backend bilang password SALAH
+    throw new Error(error.response?.data?.message || 'Email atau kata sandi salah!');
+  }
 }
