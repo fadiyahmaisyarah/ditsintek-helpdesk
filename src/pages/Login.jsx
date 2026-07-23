@@ -12,9 +12,9 @@ export default function Login() {
   const navigate = useNavigate();
 
   const [pendingRole, setPendingRole] = useState('helpdesk');
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState({ email: false, pass: false });
+  const [errors, setErrors] = useState({ username: false, pass: false });
 
   const queuePreview = useMemo(() => {
     return [...tickets]
@@ -23,14 +23,14 @@ export default function Login() {
       .slice(0, 3);
   }, [tickets]);
 
-async function handleLogin() {
-    const nextErrors = { email: !email.trim(), pass: !password.trim() };
+  async function handleLogin() {
+    const nextErrors = { username: !username.trim(), pass: !password.trim() };
     setErrors(nextErrors);
-    if (nextErrors.email || nextErrors.pass) return;
+    if (nextErrors.username || nextErrors.pass) return;
 
     try {
-      // Panggil API login
-      const user = await login({ email, password, role: pendingRole });
+      // Panggil API login dengan username
+      const user = await login({ username, password, role: pendingRole });
       
       // HANYA jika login berhasil, jalankan ini:
       if (user) {
@@ -40,7 +40,7 @@ async function handleLogin() {
     } catch (err) {
       // Jika kredensial salah / API kirim status error (400/401/500):
       console.error(err);
-      toast(err.response?.data?.message || err.message || 'Email atau password salah!');
+      toast(err.response?.data?.message || err.message || 'Username atau password salah!');
     }
   }
 
@@ -95,15 +95,15 @@ async function handleLogin() {
               Admin FAQ
             </button>
           </div>
-          <div className={`field${errors.email ? ' error' : ''}`}>
-            <label>Email</label>
+          <div className={`field${errors.username ? ' error' : ''}`}>
+            <label>Username</label>
             <input
               type="text"
-              placeholder="nama@usu.ac.id"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Masukkan username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
-            <div className="err-msg">Masukkan email kantor kamu.</div>
+            <div className="err-msg">Masukkan username kamu.</div>
           </div>
           <div className={`field${errors.pass ? ' error' : ''}`}>
             <label>Kata sandi</label>

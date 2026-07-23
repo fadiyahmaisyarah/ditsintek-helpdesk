@@ -1,14 +1,10 @@
 import api from './api';
 
-export async function login({ email, password, role }) {
+export async function login({ username, password, role }) {
   try {
-    // Panggil API login asli ke backend Railway milik Ed
-    const response = await api.post('/auth/login', { email, password, role });
-    
-    // Kirim data user jika backend bilang password BENAR
+    const response = await api.post('/auth/login', { username, password, role });
     return response.data;
   } catch (error) {
-    // Lempar error jika backend bilang password SALAH
-    throw new Error(error.response?.data?.message || 'Email atau kata sandi salah!');
+    throw new Error(error.response?.data?.message || 'Username atau kata sandi salah!');
   }
 }
