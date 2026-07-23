@@ -1,13 +1,18 @@
 import axios from 'axios';
 
-// Tetap tambahkan https:// 
-const BASE_URL = 'https://helpdesk-ditsintek-backend-production.up.railway.app';
-
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: 'https://helpdesk-ditsintek-backend.vercel.app',
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+export const setAuthToken = (token) => {
+  if (token) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete api.defaults.headers.common['Authorization'];
+  }
+};
 
 export default api;

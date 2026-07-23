@@ -12,3 +12,8 @@ export const login = async (username, password, role) => {
     throw error.response?.data || { message: 'Terjadi kesalahan pada server' };
   }
 };
+
+export const logout = () => {
+  localStorage.removeItem('user');
+  localStorage.removeItem('token');
+};
