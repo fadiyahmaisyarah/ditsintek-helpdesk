@@ -29,15 +29,16 @@ export default function Login() {
     if (nextErrors.username || nextErrors.pass) return;
 
     try {
-     
-      const user = await login(username, password);
+      // Pass username, password, dan role secara terpisah
+      const loggedInUser = await login(username, password, pendingRole);
       
-      if (user) {
+      // Jika berhasil mengembalikan user, LANGSUNG pindah ke dashboard!
+      if (loggedInUser) {
+        toast(`Selamat datang kembali, ${username}!`);
         navigate('/dashboard');
-        toast(`Selamat datang kembali!`);
       }
     } catch (err) {
-      console.error(err);
+      console.error('Login Error:', err);
       toast(err.message || 'Username atau password salah!');
     }
   }
