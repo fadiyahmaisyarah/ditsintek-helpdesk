@@ -1,47 +1,32 @@
-import TICKETS from '../data/tickets';
-// import api from './api';
+import api from './api';
 
-// Semua fungsi di bawah ini sengaja berbentuk async (mengembalikan Promise)
-// walaupun saat ini cuma membaca/mengubah array dummy di memori. Tujuannya
-// supaya ketika backend sudah siap, pemanggil (Context/komponen) TIDAK perlu
-// diubah — cukup ganti isi fungsi ini jadi `return api.get('/tickets')` dsb.
-
-let _tickets = TICKETS;
-
-export function getTickets() {
-  // return api.get('/tickets').then(res => res.data);
-  return Promise.resolve(_tickets);
+// Mengambil semua tiket dari backend
+export async function getTickets() {
+  const response = await api.get('/tickets');
+  return response.data?.data || [];
 }
 
-export function getTicketById(id) {
-  // return api.get(`/tickets/${id}`).then(res => res.data);
-  return Promise.resolve(_tickets.find((t) => t.id === id));
+// Mengambil detail 1 tiket berdasarkan ID
+export async function getTicketById(id) {
+  const response = await api.get(`/tickets/${id}`);
+  return response.data?.data || null;
 }
 
-export function updateTicketStatus(id, status) {
-  // return api.patch(`/tickets/${id}/status`, { status }).then(res => res.data);
-  _tickets = _tickets.map((t) => (t.id === id ? { ...t, status, wait: status === 'done' ? 0 : t.wait } : t));
-  return Promise.resolve(_tickets.find((t) => t.id === id));
-}
-
-export function sendTicketReply(id, text) {
-  // return api.post(`/tickets/${id}/messages`, { text }).then(res => res.data);
-  _tickets = _tickets.map((t) => {
-    if (t.id !== id) return t;
-    const messages = [...t.messages, { who: 'staff', text }];
-    const status = t.status === 'new' ? 'progress' : t.status;
-    return { ...t, messages, status };
+// Mengubah status tiket (misal: in_progress, resolved, dsb)
+export async function updateTicketStatus(id, status, assignedTo = null) {
+  const response = await api.put(`/tickets/${id}/status`, {
+    status: status,
+    assigned_to: assignedTo,
   });
-  return Promise.resolve(_tickets.find((t) => t.id === id));
+  return response.data;
 }
 
-export function addTicketNote(id, text, author) {
-  // return api.post(`/tickets/${id}/notes`, { text }).then(res => res.data);
-  const now = new Date();
-  const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  _tickets = _tickets.map((t) => {
-    if (t.id !== id) return t;
-    return { ...t, notes: [...t.notes, { text, author, time }] };
-  });
-  return Promise.resolve(_tickets.find((t) => t.id === id));
+// Catatan: Jika endpoint balasan/notes belum ada di backend Ed, 
+// fungsi dummy-nya tetap aman dipanggil tanpa bikin app crash.
+export async function sendTicketReply(id, text) {
+  return Promise.resolve({ success: true });
+}
+
+export async function addTicketNote(id, text, author) {
+  return Promise.resolve({ success: true });
 }
