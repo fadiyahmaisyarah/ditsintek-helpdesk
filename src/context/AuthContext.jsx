@@ -10,13 +10,14 @@ export function AuthProvider({ children }) {
   });
   const [loggingIn, setLoggingIn] = useState(false);
 
+ 
+  const isAuthenticated = !!user;
+
   const login = async (username, password, role = 'helpdesk') => {
     setLoggingIn(true);
     try {
-      // 1. Panggil API authService
       const response = await authService.login(username, password);
       
-      // 2. Susun objek user
       const userData = {
         username: username,
         role: role,
@@ -24,11 +25,9 @@ export function AuthProvider({ children }) {
         refreshToken: response?.data?.refreshToken,
       };
 
-      // 3. Simpan state & localStorage
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
 
-      // 4. RETURN userData agar Login.jsx tahu ini SUKSES!
       return userData;
     } catch (error) {
       throw error;
@@ -44,7 +43,8 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loggingIn }}>
+   
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, loggingIn }}>
       {children}
     </AuthContext.Provider>
   );
