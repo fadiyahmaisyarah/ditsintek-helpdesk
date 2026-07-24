@@ -75,7 +75,6 @@ export async function updateTicketStatus(id, status, assignedTo = null) {
       assigned_to: assignedTo,
     });
     
-    // Kembalikan detail tiket yang sudah diperbarui agar UI tidak crash
     return await getTicketById(id);
   } catch (error) {
     console.error('Error updating status:', error);
@@ -83,22 +82,21 @@ export async function updateTicketStatus(id, status, assignedTo = null) {
   }
 }
 
-// Kirim Balasan
+// Kirim Balasan (Sudah dihubungkan ke endpoint Ed: POST /tickets/:id/messages)
 export async function sendTicketReply(id, text) {
   try {
-    // Jika backend Ed ada endpoint reply, panggil di sini
-    // await api.post(`/tickets/${id}/reply`, { message: text });
+    await api.post(`/tickets/${id}/messages`, { message: text });
     return await getTicketById(id);
   } catch (error) {
     console.error('Error sending reply:', error);
-    return await getTicketById(id);
+    throw error; // Dilempar agar toast error di frontend bisa menangkap pesannya
   }
 }
 
-// Tambah Catatan Internal
+// Tambah Catatan Internal (Jika backend menyediakan endpoint notes)
 export async function addTicketNote(id, text, author) {
   try {
-    // Jika backend Ed ada endpoint notes, panggil di sini
+    await api.post(`/tickets/${id}/notes`, { note: text, author: author });
     return await getTicketById(id);
   } catch (error) {
     console.error('Error adding note:', error);
