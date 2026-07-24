@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://helpdesk-ditsintek-backend.vercel.app/api',
+  baseURL: 'https://helpdesk-ditsintek-backend-production.up.railway.app/api',
   headers: {
     'Content-Type': 'application/json',
   },
