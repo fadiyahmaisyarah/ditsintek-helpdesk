@@ -1,48 +1,40 @@
 import { createContext, useContext, useState } from 'react';
-import { login as loginRequest } from '../services/authService';
+import * as authService from '../services/authService';
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  // isAuthenticated dipisah dari loginRole supaya jelas: role dipilih dulu
-  // di form login (Helpdesk DITSINTEK / Admin FAQ), baru berlaku setelah
-  // klik "Masuk" — persis seperti alur pada versi HTML aslinya.
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loginRole, setLoginRole] = useState('helpdesk');
-  const [currentUser, setCurrentUser] = useState(null);
+  const [user, setUser] = useState(null);
   const [loggingIn, setLoggingIn] = useState(false);
 
-  async function login({ email, password, role }) {
+  // DIBUAT DUA PARAMETER TERPISAH: username dan password
+  const login = async (username, password) => {
     setLoggingIn(true);
     try {
-      const user = await loginRequest({ email, password, role });
-      setLoginRole(user.role);
-      setCurrentUser(user);
-      setIsAuthenticated(true);
-      return user;
+      const response = await authService.login(username, password);
+      
+      const userData = response?.data || { username, role: 'helpdesk' };
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      return userData;
+    } catch (error) {
+      throw error;
     } finally {
       setLoggingIn(false);
     }
-  }
+  };
 
-  function logout() {
-    setIsAuthenticated(false);
-    setCurrentUser(null);
-  }
-
-  const isAdmin = loginRole === 'admin';
+  const logout = () => {
+    authService.logout();
+    setUser(null);
+  };
 
   return (
-    <AuthContext.Provider
-      value={{ isAuthenticated, loginRole, currentUser, isAdmin, loggingIn, login, logout }}
-    >
+    <AuthContext.Provider value={{ user, login, logout, loggingIn }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth harus dipakai di dalam AuthProvider');
-  return ctx;
-}
+export const useAuth = () => useContext(AuthContext);
