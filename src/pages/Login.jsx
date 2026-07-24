@@ -29,18 +29,16 @@ export default function Login() {
     if (nextErrors.username || nextErrors.pass) return;
 
     try {
-      // Panggil API login dengan username
-      const user = await login({ username, password, role: pendingRole });
+     
+      const user = await login(username, password);
       
-      // HANYA jika login berhasil, jalankan ini:
       if (user) {
         navigate('/dashboard');
-        toast(`Selamat datang kembali, ${user?.role === 'admin' ? 'Dian' : 'Reza'}!`);
+        toast(`Selamat datang kembali!`);
       }
     } catch (err) {
-      // Jika kredensial salah / API kirim status error (400/401/500):
       console.error(err);
-      toast(err.response?.data?.message || err.message || 'Username atau password salah!');
+      toast(err.message || 'Username atau password salah!');
     }
   }
 

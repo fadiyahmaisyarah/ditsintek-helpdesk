@@ -2,13 +2,13 @@ import api from './api';
 
 export const login = async (username, password) => {
   try {
-    
+   
     const response = await api.post('/authentications', {
-      username,
-      password,
+      username: String(username),
+      password: String(password),
     });
 
-  
+   
     if (response.data && response.data.data) {
       const { accessToken, refreshToken } = response.data.data;
       localStorage.setItem('token', accessToken);
