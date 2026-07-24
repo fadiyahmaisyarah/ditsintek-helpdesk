@@ -82,14 +82,17 @@ export async function updateTicketStatus(id, status, assignedTo = null) {
   }
 }
 
-// Kirim Balasan (Sudah dihubungkan ke endpoint Ed: POST /tickets/:id/messages)
+// Kirim Balasan (Sudah ditambahkan sender_type agar sesuai permintaan backend Ed)
 export async function sendTicketReply(id, text) {
   try {
-    await api.post(`/tickets/${id}/messages`, { message: text });
+    await api.post(`/tickets/${id}/messages`, { 
+      message: text,
+      sender_type: 'helpdesk' 
+    });
     return await getTicketById(id);
   } catch (error) {
     console.error('Error sending reply:', error);
-    throw error; // Dilempar agar toast error di frontend bisa menangkap pesannya
+    throw error; 
   }
 }
 
