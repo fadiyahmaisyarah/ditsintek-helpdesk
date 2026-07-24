@@ -11,6 +11,16 @@ export default function TicketTable() {
   const { filteredSortedTickets, sortKey, sortDir, setSort } = useTickets();
   const navigate = useNavigate();
 
+  // Konversi string t.role ke 'tendik' atau 'mhs' agar CSS lama kamu langsung nyangkut
+  const getRoleClass = (role) => {
+    if (!role) return 'mhs';
+    const r = String(role).toLowerCase();
+    if (r.includes('tendik') || r.includes('tenaga') || r.includes('dosen')) {
+      return 'tendik';
+    }
+    return 'mhs';
+  };
+
   return (
     <table>
       <thead>
@@ -40,9 +50,12 @@ export default function TicketTable() {
               <td className="id-cell">{t.id}</td>
               <td className="who-cell">
                 <b>{t.name}</b>
-                <span className={`role-tag ${t.role}`}>{roleLabel(t.role)}</span>
+                {/* Pakai getRoleClass(t.role) agar class 'mhs' atau 'tendik' selalu terpanggil */}
+                <span className={`role-tag ${getRoleClass(t.role)}`}>
+                  {roleLabel(t.role)}
+                </span>
               </td>
-              <td className="cat-tag">{t.kategori}</td>
+              <td className="cat-tag">{t.kategori || t.category || 'Umum'}</td>
               <td>
                 <span className={`status-pill ${t.status}`}>{statusLabel(t.status)}</span>
               </td>
