@@ -14,38 +14,61 @@ export default function TicketDetail() {
   const [noteText, setNoteText] = useState('');
   const [toastMessage, setToastMessage] = useState('');
   
-  // State lokal untuk balasan dan catatan agar langsung tampil di UI
-  const [localMessages, setLocalMessages] = useState([]);
-  const [localNotes, setLocalNotes] = useState([]);
-  
   const threadRef = useRef(null);
 
-  const ticket = getTicket(id) || tickets[0];
+  const baseTicket = getTicket(id) || tickets[0];
 
-  // Sinkronisasi data awal dari Context/Backend ke State Lokal
+  // Gunakan LocalStorage agar balasan & catatan tidak hilang saat direfresh / ketimpa API
+  const storageKeyMsgs = `ticket_msgs_${id}`;
+  const storageKeyNotes = `ticket_notes_${id}`;
+
+  const [messages, setMessages] = useState(() => {
+    const saved = localStorage.getItem(storageKeyMsgs);
+    if (saved) return JSON.parse(saved);
+    return baseTicket?.messages || [];
+  });
+
+  const [notes, setNotes] = useState(() => {
+    const saved = localStorage.getItem(storageKeyNotes);
+    if (saved) return JSON.parse(saved);
+    return baseTicket?.notes || [];
+  });
+
+  // Sinkronisasi jika baseTicket berubah
   useEffect(() => {
-    if (ticket) {
-      setLocalMessages(ticket.messages || []);
-      setLocalNotes(ticket.notes || []);
+    if (baseTicket) {
+      const savedMsgs = localStorage.getItem(storageKeyMsgs);
+      if (!savedMsgs && baseTicket.messages) {
+        setMessages(baseTicket.messages);
+      }
+      const savedNotes = localStorage.getItem(storageKeyNotes);
+      if (!savedNotes && baseTicket.notes) {
+        setNotes(baseTicket.notes);
+      }
     }
-  }, [ticket]);
+  }, [baseTicket, storageKeyMsgs, storageKeyNotes]);
 
-  // Auto scroll ke paling bawah chat setiap ada pesan baru
+  // Simpan ke localStorage setiap ada perubahan
+  useEffect(() => {
+    localStorage.setItem(storageKeyMsgs, JSON.stringify(messages));
+  }, [messages, storageKeyMsgs]);
+
+  useEffect(() => {
+    localStorage.setItem(storageKeyNotes, JSON.stringify(notes));
+  }, [notes, storageKeyNotes]);
+
   useEffect(() => {
     if (threadRef.current) {
       threadRef.current.scrollTop = threadRef.current.scrollHeight;
     }
-  }, [localMessages]);
+  }, [messages]);
 
-  // Helper untuk menampilkan notifikasi Toast
   const showToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage('');
-    }, 3000);
+    setTimeout(() => setToastMessage(''), 3000);
   };
 
-  if (!ticket) {
+  if (!baseTicket) {
     return (
       <AppShell>
         <Topbar title="Tiket" description="—" />
@@ -54,28 +77,25 @@ export default function TicketDetail() {
     );
   }
 
-  // Handler Kirim Balasan
+  // Handler Kirim Balasan (Pastikan masuk ke state & tersimpan)
   async function handleSendReply() {
     if (!replyText.trim()) return;
 
     const newMsg = {
-      who: 'staff', // Balon kanan untuk admin/staff
+      who: 'staff', // Mengaktifkan balon hijau di kanan
       text: replyText,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
-    // Update state lokal secara instan
-    setLocalMessages((prev) => [...prev, newMsg]);
-
+    setMessages((prev) => [...prev, newMsg]);
     const textToSend = replyText;
     setReplyText('');
     showToast('Balasan terkirim ke Telegram');
 
-    // Panggil API di background
     try {
-      if (sendReply) await sendReply(ticket.id, textToSend);
+      if (sendReply) await sendReply(baseTicket.id, textToSend);
     } catch (err) {
-      console.error('Error sending reply to backend:', err);
+      console.error('API Error:', err);
     }
   }
 
@@ -85,32 +105,29 @@ export default function TicketDetail() {
 
     const newNote = {
       text: noteText,
-      author: 'Dian Pratiwi', // Nama Admin Helpdesk
+      author: 'Dian Pratiwi',
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
-    // Update state lokal secara instan
-    setLocalNotes((prev) => [...prev, newNote]);
-
+    setNotes((prev) => [...prev, newNote]);
     const textToSend = noteText;
     setNoteText('');
     showToast('Catatan internal disimpan');
 
-    // Panggil API di background
     try {
-      if (addNote) await addNote(ticket.id, textToSend);
+      if (addNote) await addNote(baseTicket.id, textToSend);
     } catch (err) {
-      console.error('Error adding note to backend:', err);
+      console.error('API Error:', err);
     }
   }
 
   return (
     <AppShell>
       <Topbar
-        title={ticket.id}
+        title={baseTicket.id}
         description={
           'Diteruskan dari bot Telegram — ' +
-          (ticket.status === 'done' ? 'sudah selesai' : 'belum dibalas ' + waitLabel(ticket))
+          (baseTicket.status === 'done' ? 'sudah selesai' : 'belum dibalas ' + waitLabel(baseTicket))
         }
       />
       <div className="content">
@@ -119,31 +136,31 @@ export default function TicketDetail() {
         </span>
         
         <div className="detail-grid">
-          {/* Thread Panel / Kolom Chat Utama */}
+          {/* Thread Panel */}
           <div className="thread-panel">
             <div className="thread-head">
               <div>
-                <h2>{ticket.name}</h2>
+                <h2>{baseTicket.name}</h2>
                 <div className="meta">
-                  {roleLabel(ticket.role)} · via {ticket.source || 'Bot Telegram'}
+                  {roleLabel(baseTicket.role)} · via {baseTicket.source || 'Bot Telegram'}
                 </div>
               </div>
-              <span className={`status-pill ${ticket.status}`}>{statusLabel(ticket.status)}</span>
+              <span className={`status-pill ${baseTicket.status}`}>{statusLabel(baseTicket.status)}</span>
             </div>
 
             <div className="thread-body" ref={threadRef}>
-              {localMessages && localMessages.length > 0 ? (
-                localMessages.map((m, i) => {
-                  const cls = m.who === 'user' ? 'user' : m.who === 'bot' ? 'bot' : 'staff';
-                  return (
-                    <div className={`msg ${cls}`} key={i}>
-                      {m.text}
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="msg user">{ticket.description || 'Tidak ada isi pesan.'}</div>
-              )}
+              {messages.map((m, i) => {
+                const cls = m.who === 'user' ? 'user' : m.who === 'bot' ? 'bot' : 'staff';
+                return (
+                  <div 
+                    className={`msg ${cls}`} 
+                    key={i}
+                    style={cls === 'staff' ? { marginLeft: 'auto', backgroundColor: '#1E3A2B', color: '#fff' } : {}}
+                  >
+                    {m.text}
+                  </div>
+                );
+              })}
             </div>
 
             <div className="reply-box">
@@ -161,42 +178,42 @@ export default function TicketDetail() {
             </div>
           </div>
 
-          {/* Kolom Kanan / Detail & Actions */}
+          {/* Side Column */}
           <div className="side-col">
             <div className="side-card">
               <h4>DETAIL TIKET</h4>
               <div>
                 <div className="kv">
                   <span>Kategori</span>
-                  <span><strong>{ticket.kategori || ticket.category || 'Umum'}</strong></span>
+                  <span><strong>{baseTicket.kategori || baseTicket.category || 'Umum'}</strong></span>
                 </div>
                 <div className="kv">
                   <span>Peran</span>
-                  <span><strong>{roleLabel(ticket.role)}</strong></span>
+                  <span><strong>{roleLabel(baseTicket.role)}</strong></span>
                 </div>
                 <div className="kv">
                   <span>Dibuat</span>
-                  <span>{ticket.createdAt || '—'}</span>
+                  <span>{baseTicket.createdAt || '—'}</span>
                 </div>
                 <div className="kv">
                   <span>Waktu tunggu</span>
                   <span
                     style={{
                       color:
-                        waitClass(ticket) === 'urgent'
+                        waitClass(baseTicket) === 'urgent'
                           ? 'var(--red)'
-                          : waitClass(ticket) === 'warn'
+                          : waitClass(baseTicket) === 'warn'
                           ? 'var(--amber)'
                           : 'var(--green-mid)',
                       fontWeight: 'bold'
                     }}
                   >
-                    {waitLabel(ticket)}
+                    {waitLabel(baseTicket)}
                   </span>
                 </div>
                 <div className="kv">
                   <span>Sumber</span>
-                  <span>{ticket.source || 'Bot Telegram'}</span>
+                  <span>{baseTicket.source || 'Bot Telegram'}</span>
                 </div>
               </div>
             </div>
@@ -205,8 +222,8 @@ export default function TicketDetail() {
               <h4>UBAH STATUS</h4>
               <select
                 className="status-select"
-                value={ticket.status}
-                onChange={(e) => changeStatus && changeStatus(ticket.id, e.target.value)}
+                value={baseTicket.status}
+                onChange={(e) => changeStatus && changeStatus(baseTicket.id, e.target.value)}
               >
                 <option value="new">Baru</option>
                 <option value="progress">Sedang diproses</option>
@@ -217,8 +234,8 @@ export default function TicketDetail() {
             <div className="side-card">
               <h4>CATATAN INTERNAL</h4>
               <div className="notes-list" style={{ marginBottom: '12px' }}>
-                {localNotes && localNotes.length > 0 ? (
-                  localNotes.map((n, i) => (
+                {notes.length > 0 ? (
+                  notes.map((n, i) => (
                     <div className="note-item" key={i} style={{ marginBottom: '8px' }}>
                       <div style={{ fontWeight: 500 }}>{n.text}</div>
                       <small style={{ opacity: 0.7, display: 'block', marginTop: '2px' }}>
@@ -247,7 +264,6 @@ export default function TicketDetail() {
         </div>
       </div>
 
-      {/* Toast Notification Popup */}
       {toastMessage && (
         <div
           style={{
