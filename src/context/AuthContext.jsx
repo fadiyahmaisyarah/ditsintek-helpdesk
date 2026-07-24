@@ -10,8 +10,10 @@ export function AuthProvider({ children }) {
   });
   const [loggingIn, setLoggingIn] = useState(false);
 
- 
   const isAuthenticated = !!user;
+
+  // VARIABEL INI YANG KEMAARIN KURANG: Memeriksa apakah role user itu 'admin'
+  const isAdmin = user?.role === 'admin' || user?.role === 'Admin';
 
   const login = async (username, password, role = 'helpdesk') => {
     setLoggingIn(true);
@@ -20,7 +22,7 @@ export function AuthProvider({ children }) {
       
       const userData = {
         username: username,
-        role: role,
+        role: role, // menyimpan 'admin' atau 'helpdesk'
         accessToken: response?.data?.accessToken,
         refreshToken: response?.data?.refreshToken,
       };
@@ -43,8 +45,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-   
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, loggingIn }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isAdmin, login, logout, loggingIn }}>
       {children}
     </AuthContext.Provider>
   );
