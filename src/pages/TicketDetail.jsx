@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import AppShell from '../components/AppShell';
 import Topbar from '../components/Topbar';
 import { useTickets } from '../context/TicketContext';
@@ -33,6 +34,36 @@ export default function TicketDetail() {
     if (saved) return JSON.parse(saved);
     return baseTicket?.notes || [];
   });
+
+  // Socket.io Real-time listener dari backend Ed
+  useEffect(() => {
+    // Sesuaikan dengan URL Railway backend Ed
+    const socket = io('https://helpdesk-ditsintek-backend-production.up.railway.app');
+
+    // Dengarkan event 'pesan_baru' dari Socket.io
+    socket.on('pesan_baru', (dataPesan) => {
+      // Pastikan pesan yang masuk adalah untuk tiket yang sedang dibuka di layar
+      if (dataPesan && (dataPesan.id_ticket === id || dataPesan.ticket_id === id)) {
+        setMessages((prevMessages) => {
+          // Hindari duplikat pesan jika sudah ada
+          const exists = prevMessages.some(m => m.id === dataPesan.id || (m.text === (dataPesan.message_text || dataPesan.text) && m.who === dataPesan.who));
+          if (exists) return prevMessages;
+
+          return [...prevMessages, {
+            who: dataPesan.sender_type === 'helpdesk' || dataPesan.who === 'staff' ? 'staff' : 'user',
+            text: dataPesan.message_text || dataPesan.text || '',
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }];
+        });
+      }
+    });
+
+    // Cleanup socket saat komponen ditutup
+    return () => {
+      socket.off('pesan_baru');
+      socket.disconnect();
+    };
+  }, [id]);
 
   // Sinkronisasi jika baseTicket berubah
   useEffect(() => {
@@ -165,7 +196,7 @@ export default function TicketDetail() {
 
             <div className="reply-box">
               <textarea
-                placeholder="Tulis balasan... (akan terkirim ke Telegram melalui webhook)"
+                placeholder="Tulis balasan... (terhubung real-time via Socket.io)"
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
               />
