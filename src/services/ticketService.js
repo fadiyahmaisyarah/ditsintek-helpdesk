@@ -1,12 +1,9 @@
 import api from './api';
+import { normalizeRoleKey } from '../utils/helpers';
 
 // Helper untuk merapikan nama role agar badge UI/balon warna membalas dengan benar
 function formatRole(role) {
-  if (!role) return 'Mahasiswa';
-  const r = role.toString().toLowerCase();
-  if (r.includes('tenaga') || r.includes('tendik') || r.includes('staff')) return 'Tenaga Didik';
-  if (r.includes('dosen')) return 'Dosen';
-  return 'Mahasiswa';
+  return normalizeRoleKey(role);
 }
 
 // Mapper untuk menyelaraskan data backend ke format UI

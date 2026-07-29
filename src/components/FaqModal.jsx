@@ -5,6 +5,7 @@ const EMPTY = { cat: 'Akademik', q: '', a: '' };
 
 export default function FaqModal({ open, editingFaq, onClose, onSave }) {
   const [form, setForm] = useState(EMPTY);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -17,7 +18,10 @@ export default function FaqModal({ open, editingFaq, onClose, onSave }) {
   }
 
   async function handleSave() {
+    if (saving) return;
+    setSaving(true);
     const ok = await onSave(editingFaq ? editingFaq.id : null, form);
+    setSaving(false);
     if (ok) onClose();
   }
 
@@ -25,15 +29,16 @@ export default function FaqModal({ open, editingFaq, onClose, onSave }) {
     <Modal open={open} onClose={onClose} title={editingFaq ? 'Edit FAQ' : 'Tambah FAQ'}>
       <div className="field">
         <label>Kategori</label>
-        <select value={form.cat} onChange={(e) => handleChange('cat', e.target.value)}>
-          <option>Akademik</option>
-          <option>Non Akademik</option>
-          <option>Lainnya</option>
-        </select>
+        <input
+          type="text"
+          placeholder="Contoh: Bagaimana cara reset password SIA?"
+          value={form.cat}
+          onChange={(e) => handleChange('cat', e.target.value)}
+        />
       </div>
       <div className="field" style={{ marginTop: 12 }}>
         <label>Pertanyaan</label>
-        <input
+        <textarea
           placeholder="Contoh: Bagaimana cara reset password SIA?"
           value={form.q}
           onChange={(e) => handleChange('q', e.target.value)}
@@ -51,8 +56,8 @@ export default function FaqModal({ open, editingFaq, onClose, onSave }) {
         <button className="btn-ghost" onClick={onClose}>
           Batal
         </button>
-        <button className="btn-send" onClick={handleSave}>
-          Simpan FAQ
+        <button className="btn-send" onClick={handleSave} disabled={saving}>
+          {saving ? 'Menyimpan...' : 'Simpan FAQ'}
         </button>
       </div>
     </Modal>

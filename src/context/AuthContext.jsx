@@ -22,6 +22,7 @@ export function AuthProvider({ children }) {
       
       const userData = {
         username: username,
+        name: username,
         role: role, // menyimpan 'admin' atau 'helpdesk'
         accessToken: response?.data?.accessToken,
         refreshToken: response?.data?.refreshToken,

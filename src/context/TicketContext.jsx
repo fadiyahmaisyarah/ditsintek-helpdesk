@@ -7,12 +7,13 @@ import {
 } from '../services/ticketService';
 import { useToast } from './ToastContext';
 import { useAuth } from './AuthContext';
+import { normalizeRoleKey } from '../utils/helpers';
 
 const TicketContext = createContext(null);
 
 export function TicketProvider({ children }) {
   const toast = useToast();
-  const { currentUser } = useAuth();
+  const { user } = useAuth();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,7 +46,8 @@ export function TicketProvider({ children }) {
 
   const filteredSortedTickets = useMemo(() => {
     let list = tickets.filter((t) => {
-      if (filterRole !== 'all' && t.role !== filterRole) return false;
+      const ticketRole = normalizeRoleKey(t.role);
+      if (filterRole !== 'all' && ticketRole !== filterRole) return false;
       if (filterStatus !== 'all' && t.status !== filterStatus) return false;
       const q = search.toLowerCase();
       if (
@@ -104,7 +106,7 @@ export function TicketProvider({ children }) {
 
   async function addNote(id, text) {
     if (!text.trim()) return;
-    const author = currentUser?.name || 'Dian Pratiwi';
+    const author = user?.name || user?.username || 'User';
     const updated = await addTicketNote(id, text.trim(), author);
     setTickets((prev) => prev.map((t) => (t.id === id ? updated : t)));
     toast('Catatan internal disimpan');

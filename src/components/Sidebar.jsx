@@ -2,13 +2,22 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Sidebar() {
-  const { isAdmin, logout } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
 
   function handleLogout() {
     logout();
     navigate('/login');
   }
+
+  const displayName = user?.name || user?.username || 'User';
+  const avatarText = (displayName || 'U')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
 
   return (
     <div className="sidebar">
@@ -63,9 +72,9 @@ export default function Sidebar() {
       </div>
 
       <div className="sidebar-foot">
-        <div className="avatar">DP</div>
+        <div className="avatar">{avatarText}</div>
         <div className="who">
-          <b>Dian Pratiwi</b>
+          <b>{displayName}</b>
           <small>{isAdmin ? 'Admin' : 'Helpdesk'}</small>
         </div>
       </div>

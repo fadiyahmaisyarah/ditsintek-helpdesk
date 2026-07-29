@@ -36,7 +36,7 @@ export default function Dashboard() {
         <div className="stat-grid">
           <StatCard n={urgentN} label="Belum dibalas > 2 jam" variant="urgent" />
           <StatCard n={progN} label="Sedang diproses" variant="warn" />
-          <StatCard n={doneN} label="Selesai (contoh data)" variant="good" />
+          <StatCard n={doneN} label="Selesai" variant="good" />
         </div>
         <div className="panel">
           <div className="panel-head">

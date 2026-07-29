@@ -9,6 +9,10 @@ import { useToast } from './ToastContext';
 
 const FaqContext = createContext(null);
 
+function getErrorMessage(error, fallback) {
+  return error?.response?.data?.message || fallback;
+}
+
 export function FaqProvider({ children }) {
   const toast = useToast();
   const [faqs, setFaqs] = useState([]);
@@ -32,22 +36,40 @@ export function FaqProvider({ children }) {
       toast('Isi pertanyaan dan jawaban dulu ya');
       return false;
     }
-    if (id) {
-      const updated = await updateFaqRequest(id, { cat, q: q.trim(), a: a.trim() });
-      setFaqs((prev) => prev.map((f) => (f.id === id ? updated : f)));
-      toast('FAQ berhasil diperbarui');
-    } else {
-      const created = await createFaqRequest({ cat, q: q.trim(), a: a.trim() });
-      setFaqs((prev) => [created, ...prev]);
-      toast('FAQ baru ditambahkan');
+    try {
+      if (id) {
+        const updated = await updateFaqRequest(id, { cat, q: q.trim(), a: a.trim() });
+        if (!updated?.id) {
+          toast('Gagal memperbarui FAQ');
+          return false;
+        }
+        setFaqs((prev) => prev.map((f) => (f.id === id ? updated : f)));
+        toast('FAQ berhasil diperbarui');
+      } else {
+        const created = await createFaqRequest({ cat, q: q.trim(), a: a.trim() });
+        if (!created?.id) {
+          toast('Gagal menambahkan FAQ');
+          return false;
+        }
+        setFaqs((prev) => [created, ...prev]);
+        toast('FAQ baru ditambahkan');
+      }
+      return true;
+    } catch (error) {
+      toast(getErrorMessage(error, 'Gagal menyimpan FAQ'));
+      return false;
     }
-    return true;
   }
 
   async function removeFaq(id) {
-    await deleteFaqRequest(id);
-    setFaqs((prev) => prev.filter((f) => f.id !== id));
-    toast('FAQ dihapus');
+    try {
+      const deleted = await deleteFaqRequest(id);
+      const deletedId = deleted?.id || id;
+      setFaqs((prev) => prev.filter((f) => f.id !== deletedId));
+      toast('FAQ dihapus');
+    } catch (error) {
+      toast(getErrorMessage(error, 'Gagal menghapus FAQ'));
+    }
   }
 
   const value = { faqs, loading, faqFilter, setFaqFilter, filteredFaqs, saveFaq, removeFaq };

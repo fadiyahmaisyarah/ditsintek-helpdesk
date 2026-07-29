@@ -21,8 +21,24 @@ export function statusLabel(s) {
   return s === 'new' ? 'Baru' : s === 'progress' ? 'Diproses' : 'Selesai';
 }
 
+export function normalizeRoleKey(r) {
+  if (!r) return 'mhs';
+
+  const normalized = String(r).toLowerCase().trim();
+  if (['tendik', 'tenaga', 'staff', 'dosen', 'pegawai', 'teacher'].some((value) => normalized.includes(value))) {
+    return 'tendik';
+  }
+  if (['mhs', 'mahasiswa', 'student', 'pelajar'].some((value) => normalized.includes(value))) {
+    return 'mhs';
+  }
+  return normalized === 'admin' ? 'admin' : 'mhs';
+}
+
 export function roleLabel(r) {
-  return r === 'mhs' ? 'Mahasiswa' : 'Tenaga Didik';
+  const normalized = normalizeRoleKey(r);
+  if (normalized === 'tendik') return 'Tenaga Didik';
+  if (normalized === 'admin') return 'Admin';
+  return 'Mahasiswa';
 }
 
 export function accRoleLabel(r) {
