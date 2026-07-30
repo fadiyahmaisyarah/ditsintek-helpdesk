@@ -21,15 +21,33 @@ export function FaqProvider({ children }) {
 
   useEffect(() => {
     getFaqs().then((data) => {
-      setFaqs(data);
+      setFaqs(data || []);
+      setLoading(false);
+    }).catch(() => {
       setLoading(false);
     });
   }, []);
 
-  const filteredFaqs = useMemo(
-    () => faqs.filter((f) => faqFilter === 'all' || f.cat === faqFilter),
-    [faqs, faqFilter]
-  );
+  // Perbaikan di sini: mendukung filter kategori ATAU pencarian teks bebas (pertanyaan/jawaban/kategori)
+  const filteredFaqs = useMemo(() => {
+    if (!faqFilter || faqFilter === 'all') {
+      return faqs;
+    }
+    const keyword = faqFilter.toLowerCase();
+    
+    // Cek apakah faqFilter ini cocok sebagai kategori persis, ATAU mengandung teks di pertanyaan/jawaban/kategori
+    return faqs.filter((f) => {
+      const matchCat = f.cat && f.cat.toLowerCase() === keyword;
+      const matchQuery = 
+        (f.q && f.q.toLowerCase().includes(keyword)) ||
+        (f.a && f.a.toLowerCase().includes(keyword)) ||
+        (f.cat && f.cat.toLowerCase().includes(keyword)) ||
+        (f.question && f.question.toLowerCase().includes(keyword)) ||
+        (f.answer && f.answer.toLowerCase().includes(keyword));
+      
+      return matchCat || matchQuery;
+    });
+  }, [faqs, faqFilter]);
 
   async function saveFaq(id, { cat, q, a }) {
     if (!q.trim() || !a.trim()) {
