@@ -17,20 +17,25 @@ export function FaqProvider({ children }) {
   const toast = useToast();
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [faqFilter, setFaqFilter] = useState('all');
+  const [faqFilter, setFaqFilter] = useState('');
 
+  // Mengambil data FAQ dari database backend saat pertama kali dibuka
   useEffect(() => {
-    getFaqs().then((data) => {
-      setFaqs(data || []);
-      setLoading(false);
-    }).catch(() => {
-      setLoading(false);
-    });
+    getFaqs()
+      .then((data) => {
+        // Mendukung berbagai format struktur data dari API backend
+        const list = Array.isArray(data) ? data : data?.data || [];
+        setFaqs(list);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
   }, []);
 
-  // Perbaikan lengkap di sini: mencocokkan teks lintas seluruh variasi properti database
+  // Logika pencarian real-time persis seperti halaman Antrean Tiket
   const filteredFaqs = useMemo(() => {
-    if (!faqFilter || faqFilter === 'all') {
+    if (!faqFilter || faqFilter.trim() === '' || faqFilter === 'all') {
       return faqs;
     }
     const keyword = faqFilter.toLowerCase();
@@ -60,7 +65,7 @@ export function FaqProvider({ children }) {
           toast('Gagal memperbarui FAQ');
           return false;
         }
-        setFaqs((prev) => prev.map((f) => (f.id === id ? updated : f)));
+        setFaqs((prev) => prev.map((item) => (item.id === id ? updated : item)));
         toast('FAQ berhasil diperbarui');
       } else {
         const created = await createFaqRequest({ cat, q: q.trim(), a: a.trim() });
@@ -82,7 +87,7 @@ export function FaqProvider({ children }) {
     try {
       const deleted = await deleteFaqRequest(id);
       const deletedId = deleted?.id || id;
-      setFaqs((prev) => prev.filter((f) => f.id !== deletedId));
+      setFaqs((prev) => prev.filter((item) => item.id !== deletedId));
       toast('FAQ dihapus');
     } catch (error) {
       toast(getErrorMessage(error, 'Gagal menghapus FAQ'));
