@@ -112,11 +112,6 @@ export default function TicketDetail() {
     }
   }, [baseTicket?.status]);
 
-  // // Simpan ke localStorage setiap ada perubahan
-  // useEffect(() => {
-  //   localStorage.setItem(storageKeyMsgs, JSON.stringify(messages));
-  // }, [messages, storageKeyMsgs]);
-
   useEffect(() => {
     localStorage.setItem(storageKeyNotes, JSON.stringify(notes));
   }, [notes, storageKeyNotes]);
@@ -126,11 +121,6 @@ export default function TicketDetail() {
       threadRef.current.scrollTop = threadRef.current.scrollHeight;
     }
   }, [messages]);
-
-  const showToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(''), 3000);
-  };
 
   if (!baseTicket) {
     return (
@@ -154,7 +144,6 @@ export default function TicketDetail() {
     setMessages((prev) => [...prev, newMsg]);
     const textToSend = replyText;
     setReplyText('');
-    showToast('Balasan terkirim ke Telegram');
 
     try {
       if (sendReply) await sendReply(baseTicket.id, textToSend);
@@ -176,7 +165,6 @@ export default function TicketDetail() {
     setNotes((prev) => [...prev, newNote]);
     const textToSend = noteText;
     setNoteText('');
-    showToast('Catatan internal disimpan');
 
     try {
       if (addNote) await addNote(baseTicket.id, textToSend);

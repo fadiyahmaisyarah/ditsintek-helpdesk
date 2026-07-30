@@ -115,11 +115,15 @@ export function TicketProvider({ children }) {
   }
 
   async function sendReply(id, text) {
-    if (!text.trim()) return;
-    const updated = await sendTicketReply(id, text.trim());
-    setTickets((prev) => prev.map((t) => (t.id === id ? updated : t)));
-    toast('Balasan terkirim ke Telegram');
-  }
+    try {
+      if (!text.trim()) return;
+      const updated = await sendTicketReply(id, text.trim());
+      setTickets((prev) => prev.map((t) => (t.id === id ? updated : t)));
+    } catch (error) {
+      toast('Gagal mengirim pesan ke telegram');
+      throw error; 
+    }}
+    
 
   async function addNote(id, text) {
     if (!text.trim()) return;
