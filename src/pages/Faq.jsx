@@ -41,11 +41,6 @@ export default function Faq() {
     return filteredFaqs.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredFaqs, currentPage]);
 
-  const paginatedTickets = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredFaqs.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredFaqs, currentPage]);
-
   function openAdd() {
     setEditingId(null);
     setModalOpen(true);
@@ -62,19 +57,44 @@ export default function Faq() {
 
   return (
     <AppShell>
+      {/* Kotak search dipindah ke sini (di dalam Topbar) sebelah kanan */}
       <Topbar
         title="Kelola FAQ"
         description="Ini yang dibaca bot sebelum meneruskan ke manusia — makin lengkap, makin sedikit tiket yang masuk."
-      />
-     <div className="content">
-        <div className="faq-toolbar">
-          <button className="btn-add" onClick={openAdd} style={{ marginLeft: 'auto' }}>
+      >
+        <input
+          type="text"
+          placeholder="Cari FAQ..."
+          value={faqFilter || ''}
+          onChange={(e) => setFaqFilter(e.target.value)}
+          style={{
+            padding: '6px 12px',
+            borderRadius: '6px',
+            border: '1px solid #ccc',
+            fontSize: '13px',
+            outline: 'none',
+            minWidth: '200px',
+            backgroundColor: '#fff'
+          }}
+        />
+      </Topbar>
+
+      <div className="content">
+        <div className="faq-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          {/* Teks counter jumlah FAQ terdaftar */}
+          <div className="faq-count-text" style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>
+            {filteredFaqs.length} FAQ terdaftar
+          </div>
+
+          {/* Tombol Tambah FAQ saja yang tertinggal di bawah */}
+          <button className="btn-add" onClick={openAdd} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <path d="M12 5v14M5 12h14" />
             </svg>
             Tambah FAQ
           </button>
         </div>
+
         <div className="panel">
           <div className="faq-list">
             <FaqTable faqs={paginatedFaqs} onEdit={openEdit} onDelete={removeFaq} />

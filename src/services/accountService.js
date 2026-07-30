@@ -1,32 +1,39 @@
+import api from './api';
 import ACCOUNTS from '../data/accounts';
-// import api from './api';
-
-let _accounts = ACCOUNTS;
 
 export function getAccounts() {
-  // return api.get('/accounts').then(res => res.data);
-  return Promise.resolve(_accounts);
+  return api.get('/users')
+    .then(res => {
+      const users = res.data.data || res.data;
+      if (!users || !Array.isArray(users)) return ACCOUNTS;
+      return users.map(user => ({
+        id: user.id_user || user.id,
+        name: user.name,
+        email: user.username,
+        role: user.role,
+        active: true
+      }));
+    })
+    .catch(err => {
+      console.warn("Gagal ambil dari API database, menggunakan data lokal sementara:", err);
+      return ACCOUNTS;
+    });
 }
 
-export function createAccount({ name, email, role, password }) {
-  // return api.post('/accounts', { name, email, role, password }).then(res => res.data);
-  const newId = Math.max(0, ..._accounts.map((a) => a.id)) + 1;
-  const newAccount = { id: newId, name, email, role, active: true, password };
-  _accounts = [..._accounts, newAccount];
-  return Promise.resolve(newAccount);
+export function createAccount({ name, username, email, role, password }) {
+  return api.post('/users', { name, username: username || email, password, role })
+    .then(res => res.data);
 }
 
 export function updateAccount(id, { name, email, role, password }) {
-  // return api.put(`/accounts/${id}`, { name, email, role, password }).then(res => res.data);
-  _accounts = _accounts.map((a) => {
-    if (a.id !== id) return a;
-    return { ...a, name, email, role, ...(password ? { password } : {}) };
-  });
-  return Promise.resolve(_accounts.find((a) => a.id === id));
+  const payload = {};
+  if (password) payload.password = password;
+  if (name) payload.name = name;
+  if (role) payload.role = role;
+  
+  return api.put(`/users/${id}`, payload).then(res => res.data);
 }
 
 export function deleteAccount(id) {
-  // return api.delete(`/accounts/${id}`);
-  _accounts = _accounts.filter((a) => a.id !== id);
-  return Promise.resolve(true);
+  return api.delete(`/users/${id}`).then(res => res.data);
 }

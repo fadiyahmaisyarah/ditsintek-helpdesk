@@ -15,21 +15,25 @@ export default function TicketDetail() {
   const [noteText, setNoteText] = useState('');
   const [toastMessage, setToastMessage] = useState('');
   
+  // State untuk memaksa komponen me-render ulang setiap 1 menit agar waktu tunggu terhitung real-time terhadap jam sekarang
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTick((t) => t + 1);
+    }, 60000); // Update setiap 1 menit
+    return () => clearInterval(timer);
+  }, []);
+  
   const threadRef = useRef(null);
 
   const baseTicket = getTicket(id) || tickets[0];
 
   const [localStatus, setLocalStatus] = useState(baseTicket?.status || 'open');
 
-  // Gunakan LocalStorage agar balasan & catatan tidak hilang saat direfresh / ketimpa API
   const [messages, setMessages] = useState([]);
 
   const storageKeyNotes = `ticket_notes_${id}`;
-  // const [notes, setNotes] = useState(() => {
-  //   const saved = localStorage.getItem(storageKeyNotes);
-  //   if (saved) return JSON.parse(saved);
-  //   return baseTicket?.notes || [];
-  // });
 
   const [notes, setNotes] = useState(() => {
     const saved = localStorage.getItem(storageKeyNotes);
@@ -41,14 +45,12 @@ export default function TicketDetail() {
   useEffect(() => {
     const fetchRiwayatChat = async () => {
       try {
-        // Anda bisa menggunakan axios jika sudah terinstall, atau fetch biasa seperti ini:
         const response = await fetch(`https://helpdesk-ditsintek-backend-production.up.railway.app/api/tickets/${id}/messages`);
         const result = await response.json();
 
         if (result.status === 'success' && result.data) {
-          // Format data backend (message_text, sender_type) ke format UI Anda (text, who)
           const formattedMessages = result.data.map(msg => ({
-            id_message: msg.id_message, // Penting untuk mencegah duplikat
+            id_message: msg.id_message,
             who: msg.sender_type === 'helpdesk' ? 'staff' : 'user',
             text: msg.message_text,
             time: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -71,7 +73,6 @@ export default function TicketDetail() {
     socket.on('pesan_baru', (dataPesan) => {
       if (dataPesan && (dataPesan.id_ticket === id || dataPesan.ticket_id === id)) {
         setMessages((prevMessages) => {
-          // Cek duplikasi berdasarkan id_message (jika dikirim backend) atau kesamaan teks
           const isDuplicate = prevMessages.some(m => 
             (m.id_message && m.id_message === dataPesan.id_message) || 
             (m.text === dataPesan.message_text && m.who === (dataPesan.sender_type === 'helpdesk' ? 'staff' : 'user'))
@@ -79,7 +80,6 @@ export default function TicketDetail() {
           
           if (isDuplicate) return prevMessages;
 
-          // Tambahkan pesan ke bubble chat UI
           return [...prevMessages, {
             id_message: dataPesan.id_message || null,
             who: dataPesan.sender_type === 'helpdesk' ? 'staff' : 'user',
@@ -96,15 +96,14 @@ export default function TicketDetail() {
     };
   }, [id]);
 
-  // Sinkronisasi notes jika baseTicket berubah
-    useEffect(() => {
-      if (baseTicket) {
-        const savedNotes = localStorage.getItem(storageKeyNotes);
-        if (!savedNotes && baseTicket.notes) {
-          setNotes(baseTicket.notes);
-        }
+  useEffect(() => {
+    if (baseTicket) {
+      const savedNotes = localStorage.getItem(storageKeyNotes);
+      if (!savedNotes && baseTicket.notes) {
+        setNotes(baseTicket.notes);
       }
-    }, [baseTicket, storageKeyNotes]);
+    }
+  }, [baseTicket, storageKeyNotes]);
 
   useEffect(() => {
     if (baseTicket) {
@@ -131,12 +130,11 @@ export default function TicketDetail() {
     );
   }
 
-  // Handler Kirim Balasan (Pastikan masuk ke state & tersimpan)
   async function handleSendReply() {
     if (!replyText.trim()) return;
 
     const newMsg = {
-      who: 'staff', // Mengaktifkan balon hijau di kanan
+      who: 'staff',
       text: replyText,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
@@ -152,7 +150,6 @@ export default function TicketDetail() {
     }
   }
 
-  // Handler Simpan Catatan Internal
   async function handleAddNote() {
     if (!noteText.trim()) return;
 
@@ -245,7 +242,7 @@ export default function TicketDetail() {
                 </div>
                 <div className="kv">
                   <span>Dibuat</span>
-                  <span>{baseTicket.createdAt || '—'}</span>
+                  <span>{baseTicket.createdAt || baseTicket.created_at || '—'}</span>
                 </div>
                 <div className="kv">
                   <span>Waktu tunggu</span>
@@ -277,18 +274,12 @@ export default function TicketDetail() {
                 value={localStatus}
                 onChange={async (e) => {
                   const newStatus = e.target.value;
-
-                  // 1. Ubah UI secara instan (Optimistic Update)
                   setLocalStatus(newStatus);
-
-                  // 2. Jalankan fungsi API di background
                   if (changeStatus) {
                     try {
-                      // Context akan mengurus update state global dan memunculkan toast sukses
                       await changeStatus(baseTicket.id, newStatus);
                     } catch (err) {
                       console.error('API Error:', err);
-                      // Context memunculkan toast error, kita hanya perlu melakukan Rollback UI di sini
                       setLocalStatus(baseTicket.status); 
                     }
                   }
@@ -332,29 +323,6 @@ export default function TicketDetail() {
           </div>
         </div>
       </div>
-
-      {toastMessage && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: '24px',
-            right: '24px',
-            backgroundColor: '#1E3A2B',
-            color: '#ffffff',
-            padding: '12px 20px',
-            borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-            fontSize: '14px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            zIndex: 9999
-          }}
-        >
-          <span>✓</span>
-          <span>{toastMessage}</span>
-        </div>
-      )}
     </AppShell>
   );
 }
