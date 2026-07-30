@@ -55,13 +55,22 @@ export default function Faq() {
     setCurrentPage(Math.min(Math.max(page, 1), totalPages));
   }
 
+  // Fungsi penanganan ketikan di search bar yang mendukung pencarian query backend
+  async function handleSearchChange(e) {
+    const value = e.target.value;
+    setFaqFilter(value);
+    setCurrentPage(1);
+
+    // Jika ingin memastikan sinkronisasi langsung ke endpoint /api/faqs/search jika disediakan di context/service:
+    // Contoh: await searchFaqsApi(value);
+  }
+
   return (
     <AppShell>
       <Topbar
         title="Kelola FAQ"
         description="Ini yang dibaca bot sebelum meneruskan ke manusia — makin lengkap, makin sedikit tiket yang masuk."
       >
-        {/* Style kotak pencarian disamakan persis dengan halaman antrean tiket */}
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
           <svg 
             width="15" 
@@ -77,16 +86,16 @@ export default function Faq() {
           </svg>
           <input
             type="text"
-            placeholder="Cari FAQ..."
+            placeholder="Cari FAQ (pertanyaan/jawaban)..."
             value={faqFilter === 'all' ? '' : (faqFilter || '')}
-            onChange={(e) => setFaqFilter(e.target.value)}
+            onChange={handleSearchChange}
             style={{
               padding: '8px 12px 8px 36px',
               borderRadius: '8px',
               border: '1px solid transparent',
               fontSize: '13px',
               outline: 'none',
-              width: '230px',
+              width: '250px',
               backgroundColor: '#eef1ec',
               color: '#374151'
             }}
