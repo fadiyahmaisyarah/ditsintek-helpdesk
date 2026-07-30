@@ -8,27 +8,12 @@ import { useFaqs } from '../context/FaqContext';
 const ITEMS_PER_PAGE = 10;
 
 export default function Faq() {
-  const { faqs, faqFilter, setFaqFilter, saveFaq, removeFaq } = useFaqs();
+  const { faqs, filteredFaqs, faqFilter, setFaqFilter, saveFaq, removeFaq } = useFaqs();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   const editingFaq = editingId ? faqs.find((f) => f.id === editingId) : null;
-
-  // Logika filter lokal yang aman dan presisi seperti Antrean Tiket:
-  // Jika faqFilter kosong, tampilkan semua data faqs. Jika ada, filter berdasarkan pertanyaan, jawaban, atau kategori.
-  const filteredFaqs = useMemo(() => {
-    if (!faqFilter || faqFilter.trim() === '' || faqFilter === 'all') {
-      return faqs;
-    }
-    const keyword = faqFilter.toLowerCase();
-    return faqs.filter(
-      (f) =>
-        (f.pertanyaan && f.pertanyaan.toLowerCase().includes(keyword)) ||
-        (f.jawaban && f.jawaban.toLowerCase().includes(keyword)) ||
-        (f.kategori && f.kategori.toLowerCase().includes(keyword))
-    );
-  }, [faqs, faqFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredFaqs.length / ITEMS_PER_PAGE));
 
@@ -69,8 +54,7 @@ export default function Faq() {
   }
 
   function handleSearchChange(e) {
-    const val = e.target.value;
-    setFaqFilter(val);
+    setFaqFilter(e.target.value);
     setCurrentPage(1);
   }
 
@@ -96,7 +80,7 @@ export default function Faq() {
           <input
             type="text"
             placeholder="Cari FAQ (pertanyaan/jawaban)..."
-            value={faqFilter === 'all' ? '' : (faqFilter || '')}
+            value={faqFilter}
             onChange={handleSearchChange}
             style={{
               padding: '8px 12px 8px 36px',
@@ -129,6 +113,14 @@ export default function Faq() {
         <div className="panel">
           <div className="faq-list">
             <FaqTable faqs={paginatedFaqs} onEdit={openEdit} onDelete={removeFaq} />
+            
+            {/* Pesan jika data kosong atau tidak ditemukan saat dicari, persis seperti antrean tiket */}
+            {filteredFaqs.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '32px', color: '#6b7280', fontSize: '14px' }}>
+                Tidak ada FAQ yang cocok dengan filter ini.
+              </div>
+            )}
+
             {filteredFaqs.length > 0 && (
               <div className="faq-pagination-wrap">
                 <div className="faq-pagination" role="navigation" aria-label="Pagination FAQ">
