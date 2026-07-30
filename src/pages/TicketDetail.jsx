@@ -22,14 +22,14 @@ export default function TicketDetail() {
   const [localStatus, setLocalStatus] = useState(baseTicket?.status || 'open');
 
   // Gunakan LocalStorage agar balasan & catatan tidak hilang saat direfresh / ketimpa API
-  const storageKeyMsgs = `ticket_msgs_${id}`;
-  const storageKeyNotes = `ticket_notes_${id}`;
+  const [messages, setMessages] = useState([]);
 
-  const [messages, setMessages] = useState(() => {
-    const saved = localStorage.getItem(storageKeyMsgs);
-    if (saved) return JSON.parse(saved);
-    return baseTicket?.messages || [];
-  });
+  const storageKeyNotes = `ticket_notes_${id}`;
+  // const [notes, setNotes] = useState(() => {
+  //   const saved = localStorage.getItem(storageKeyNotes);
+  //   if (saved) return JSON.parse(saved);
+  //   return baseTicket?.notes || [];
+  // });
 
   const [notes, setNotes] = useState(() => {
     const saved = localStorage.getItem(storageKeyNotes);
@@ -37,49 +37,74 @@ export default function TicketDetail() {
     return baseTicket?.notes || [];
   });
 
-  // Socket.io Real-time listener dari backend Ed
+  // REST API: Memuat riwayat chat lama saat pertama kali dibuka
   useEffect(() => {
-    // Sesuaikan dengan URL Railway backend Ed
+    const fetchRiwayatChat = async () => {
+      try {
+        // Anda bisa menggunakan axios jika sudah terinstall, atau fetch biasa seperti ini:
+        const response = await fetch(`https://helpdesk-ditsintek-backend-production.up.railway.app/api/tickets/${id}/messages`);
+        const result = await response.json();
+
+        if (result.status === 'success' && result.data) {
+          // Format data backend (message_text, sender_type) ke format UI Anda (text, who)
+          const formattedMessages = result.data.map(msg => ({
+            id_message: msg.id_message, // Penting untuk mencegah duplikat
+            who: msg.sender_type === 'helpdesk' ? 'staff' : 'user',
+            text: msg.message_text,
+            time: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }));
+          
+          setMessages(formattedMessages);
+        }
+      } catch (error) {
+        console.error('Gagal memuat riwayat chat:', error);
+      }
+    };
+
+    fetchRiwayatChat();
+  }, [id]);
+
+  // SOCKET.IO: Mendengarkan pesan baru secara real-time
+  useEffect(() => {
     const socket = io('https://helpdesk-ditsintek-backend-production.up.railway.app');
 
-    // Dengarkan event 'pesan_baru' dari Socket.io
     socket.on('pesan_baru', (dataPesan) => {
-      // Pastikan pesan yang masuk adalah untuk tiket yang sedang dibuka di layar
       if (dataPesan && (dataPesan.id_ticket === id || dataPesan.ticket_id === id)) {
         setMessages((prevMessages) => {
-          // Hindari duplikat pesan jika sudah ada
-          const exists = prevMessages.some(m => m.id === dataPesan.id || (m.text === (dataPesan.message_text || dataPesan.text) && m.who === dataPesan.who));
-          if (exists) return prevMessages;
+          // Cek duplikasi berdasarkan id_message (jika dikirim backend) atau kesamaan teks
+          const isDuplicate = prevMessages.some(m => 
+            (m.id_message && m.id_message === dataPesan.id_message) || 
+            (m.text === dataPesan.message_text && m.who === (dataPesan.sender_type === 'helpdesk' ? 'staff' : 'user'))
+          );
+          
+          if (isDuplicate) return prevMessages;
 
+          // Tambahkan pesan ke bubble chat UI
           return [...prevMessages, {
-            who: dataPesan.sender_type === 'helpdesk' || dataPesan.who === 'staff' ? 'staff' : 'user',
-            text: dataPesan.message_text || dataPesan.text || '',
+            id_message: dataPesan.id_message || null,
+            who: dataPesan.sender_type === 'helpdesk' ? 'staff' : 'user',
+            text: dataPesan.message_text,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }];
         });
       }
     });
 
-    // Cleanup socket saat komponen ditutup
     return () => {
       socket.off('pesan_baru');
       socket.disconnect();
     };
   }, [id]);
 
-  // Sinkronisasi jika baseTicket berubah
-  useEffect(() => {
-    if (baseTicket) {
-      const savedMsgs = localStorage.getItem(storageKeyMsgs);
-      if (!savedMsgs && baseTicket.messages) {
-        setMessages(baseTicket.messages);
+  // Sinkronisasi notes jika baseTicket berubah
+    useEffect(() => {
+      if (baseTicket) {
+        const savedNotes = localStorage.getItem(storageKeyNotes);
+        if (!savedNotes && baseTicket.notes) {
+          setNotes(baseTicket.notes);
+        }
       }
-      const savedNotes = localStorage.getItem(storageKeyNotes);
-      if (!savedNotes && baseTicket.notes) {
-        setNotes(baseTicket.notes);
-      }
-    }
-  }, [baseTicket, storageKeyMsgs, storageKeyNotes]);
+    }, [baseTicket, storageKeyNotes]);
 
   useEffect(() => {
     if (baseTicket) {
@@ -87,10 +112,10 @@ export default function TicketDetail() {
     }
   }, [baseTicket?.status]);
 
-  // Simpan ke localStorage setiap ada perubahan
-  useEffect(() => {
-    localStorage.setItem(storageKeyMsgs, JSON.stringify(messages));
-  }, [messages, storageKeyMsgs]);
+  // // Simpan ke localStorage setiap ada perubahan
+  // useEffect(() => {
+  //   localStorage.setItem(storageKeyMsgs, JSON.stringify(messages));
+  // }, [messages, storageKeyMsgs]);
 
   useEffect(() => {
     localStorage.setItem(storageKeyNotes, JSON.stringify(notes));

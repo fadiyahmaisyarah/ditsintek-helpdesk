@@ -12,7 +12,6 @@ export default function FaqTable({ faqs, onEdit, onDelete }) {
     <table>
       <thead>
         <tr>
-          <th style={{ width: 64 }}>ID</th>
           <th style={{ width: 120 }}>Kategori</th>
           <th>Pertanyaan</th>
           <th>Jawaban</th>
@@ -22,7 +21,7 @@ export default function FaqTable({ faqs, onEdit, onDelete }) {
       <tbody>
         {faqs.map((f) => (
           <tr key={f.id}>
-            <td className="id-cell">FAQ-{String(f.id).padStart(3, '0')}</td>
+            {/* <td className="id-cell"></td> */}
             <td>
               <span className="cat-badge">{f.cat}</span>
             </td>
