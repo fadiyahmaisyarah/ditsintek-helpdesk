@@ -16,13 +16,6 @@ export default function Faq() {
   const editingFaq = editingId ? faqs.find((f) => f.id === editingId) : null;
   const totalPages = Math.max(1, Math.ceil(filteredFaqs.length / ITEMS_PER_PAGE));
 
-  // Pastikan saat pertama load, jika nilainya 'all', langsung dibersihkan jadi string kosong
-  useEffect(() => {
-    if (faqFilter === 'all') {
-      setFaqFilter('');
-    }
-  }, [faqFilter, setFaqFilter]);
-
   useEffect(() => {
     setCurrentPage((page) => Math.min(page, totalPages));
   }, [totalPages]);
@@ -64,12 +57,12 @@ export default function Faq() {
 
   return (
     <AppShell>
-      {/* Topbar dengan Search Bar yang desainnya disamakan persis dengan Antrean Tiket */}
+      {/* Topbar dengan Search Bar di pojok kanan atas */}
       <Topbar
         title="Kelola FAQ"
         description="Ini yang dibaca bot sebelum meneruskan ke manusia — makin lengkap, makin sedikit tiket yang masuk."
       >
-        <div className="search-box" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
           <svg 
             width="15" 
             height="15" 
@@ -90,12 +83,11 @@ export default function Faq() {
             style={{
               padding: '8px 12px 8px 36px',
               borderRadius: '6px',
-              border: '1px solid #e5e7eb',
+              border: '1px solid #d1d5db',
               fontSize: '13px',
               outline: 'none',
-              width: '230px',
-              backgroundColor: '#f3f4f6',
-              color: '#374151'
+              minWidth: '220px',
+              backgroundColor: '#fff'
             }}
           />
         </div>
