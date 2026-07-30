@@ -8,12 +8,28 @@ import { useFaqs } from '../context/FaqContext';
 const ITEMS_PER_PAGE = 10;
 
 export default function Faq() {
-  const { faqs, faqFilter, setFaqFilter, filteredFaqs, saveFaq, removeFaq } = useFaqs();
+  const { faqs, faqFilter, setFaqFilter, saveFaq, removeFaq } = useFaqs();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   const editingFaq = editingId ? faqs.find((f) => f.id === editingId) : null;
+
+  // Logika filter lokal yang aman dan presisi seperti Antrean Tiket:
+  // Jika faqFilter kosong, tampilkan semua data faqs. Jika ada, filter berdasarkan pertanyaan, jawaban, atau kategori.
+  const filteredFaqs = useMemo(() => {
+    if (!faqFilter || faqFilter.trim() === '' || faqFilter === 'all') {
+      return faqs;
+    }
+    const keyword = faqFilter.toLowerCase();
+    return faqs.filter(
+      (f) =>
+        (f.pertanyaan && f.pertanyaan.toLowerCase().includes(keyword)) ||
+        (f.jawaban && f.jawaban.toLowerCase().includes(keyword)) ||
+        (f.kategori && f.kategori.toLowerCase().includes(keyword))
+    );
+  }, [faqs, faqFilter]);
+
   const totalPages = Math.max(1, Math.ceil(filteredFaqs.length / ITEMS_PER_PAGE));
 
   useEffect(() => {
@@ -24,15 +40,12 @@ export default function Faq() {
     if (totalPages <= 7) {
       return Array.from({ length: totalPages }, (_, index) => index + 1);
     }
-
     if (currentPage <= 4) {
       return [1, 2, 3, 4, 5, 'ellipsis', totalPages];
     }
-
     if (currentPage >= totalPages - 3) {
       return [1, 'ellipsis', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
     }
-
     return [1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages];
   }, [currentPage, totalPages]);
 
@@ -55,14 +68,10 @@ export default function Faq() {
     setCurrentPage(Math.min(Math.max(page, 1), totalPages));
   }
 
-  // Fungsi penanganan ketikan di search bar yang mendukung pencarian query backend
-  async function handleSearchChange(e) {
-    const value = e.target.value;
-    setFaqFilter(value);
+  function handleSearchChange(e) {
+    const val = e.target.value;
+    setFaqFilter(val);
     setCurrentPage(1);
-
-    // Jika ingin memastikan sinkronisasi langsung ke endpoint /api/faqs/search jika disediakan di context/service:
-    // Contoh: await searchFaqsApi(value);
   }
 
   return (
@@ -95,7 +104,7 @@ export default function Faq() {
               border: '1px solid transparent',
               fontSize: '13px',
               outline: 'none',
-              width: '250px',
+              width: '260px',
               backgroundColor: '#eef1ec',
               color: '#374151'
             }}
