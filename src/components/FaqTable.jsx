@@ -1,12 +1,3 @@
-const MAX_TEXT_LENGTH = 150;
-const MAX_CATEGORY_LENGTH = 60;
-
-function truncateText(value, maxLength) {
-  if (!value) return '';
-  if (value.length <= maxLength) return value;
-  return `${value.slice(0, maxLength - 1).trimEnd()}…`;
-}
-
 export default function FaqTable({ faqs, onEdit, onDelete }) {
   if (!faqs.length) {
     return (
@@ -21,26 +12,22 @@ export default function FaqTable({ faqs, onEdit, onDelete }) {
     <table>
       <thead>
         <tr>
-          <th style={{ width: 140 }}>Kategori</th>
+          <th style={{ width: 64 }}>ID</th>
+          <th style={{ width: 120 }}>Kategori</th>
           <th>Pertanyaan</th>
           <th>Jawaban</th>
-          <th style={{ width: 90 }}>Aksi</th>
+          <th style={{ width: 80 }}>Aksi</th>
         </tr>
       </thead>
       <tbody>
         {faqs.map((f) => (
           <tr key={f.id}>
-            <td className="cat-cell">
-              <span className="cat-badge" title={f.cat}>
-                {truncateText(f.cat, MAX_CATEGORY_LENGTH)}
-              </span>
+            <td className="id-cell">FAQ-{String(f.id).padStart(3, '0')}</td>
+            <td>
+              <span className="cat-badge">{f.cat}</span>
             </td>
-            <td className="q-cell" title={f.q}>
-              {truncateText(f.q, MAX_TEXT_LENGTH)}
-            </td>
-            <td className="a-cell" title={f.a}>
-              {truncateText(f.a, MAX_TEXT_LENGTH)}
-            </td>
+            <td className="q-cell">{f.q}</td>
+            <td className="a-cell">{f.a}</td>
             <td>
               <div className="faq-actions">
                 <div className="icon-btn" onClick={() => onEdit(f.id)} title="Edit">

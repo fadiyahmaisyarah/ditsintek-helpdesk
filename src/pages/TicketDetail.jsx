@@ -4,7 +4,7 @@ import { io } from 'socket.io-client';
 import AppShell from '../components/AppShell';
 import Topbar from '../components/Topbar';
 import { useTickets } from '../context/TicketContext';
-import { roleLabel, statusLabel, waitClass, waitLabel } from '../utils/helpers';
+import { roleLabel, statusBadgeClass, statusLabel, waitClass, waitLabel } from '../utils/helpers';
 
 export default function TicketDetail() {
   const { id } = useParams();
@@ -18,6 +18,8 @@ export default function TicketDetail() {
   const threadRef = useRef(null);
 
   const baseTicket = getTicket(id) || tickets[0];
+
+  const [localStatus, setLocalStatus] = useState(baseTicket?.status || 'open');
 
   // Gunakan LocalStorage agar balasan & catatan tidak hilang saat direfresh / ketimpa API
   const storageKeyMsgs = `ticket_msgs_${id}`;
@@ -78,6 +80,12 @@ export default function TicketDetail() {
       }
     }
   }, [baseTicket, storageKeyMsgs, storageKeyNotes]);
+
+  useEffect(() => {
+    if (baseTicket) {
+      setLocalStatus(baseTicket.status);
+    }
+  }, [baseTicket?.status]);
 
   // Simpan ke localStorage setiap ada perubahan
   useEffect(() => {
@@ -176,7 +184,7 @@ export default function TicketDetail() {
                   {roleLabel(baseTicket.role)} · via {baseTicket.source || 'Bot Telegram'}
                 </div>
               </div>
-              <span className={`status-pill ${baseTicket.status}`}>{statusLabel(baseTicket.status)}</span>
+              <span className={`status-pill ${statusBadgeClass(localStatus)}`}>{statusLabel(localStatus)}</span>
             </div>
 
             <div className="thread-body" ref={threadRef}>
@@ -253,12 +261,29 @@ export default function TicketDetail() {
               <h4>UBAH STATUS</h4>
               <select
                 className="status-select"
-                value={baseTicket.status}
-                onChange={(e) => changeStatus && changeStatus(baseTicket.id, e.target.value)}
+                value={localStatus}
+                onChange={async (e) => {
+                  const newStatus = e.target.value;
+
+                  // 1. Ubah UI secara instan (Optimistic Update)
+                  setLocalStatus(newStatus);
+
+                  // 2. Jalankan fungsi API di background
+                  if (changeStatus) {
+                    try {
+                      // Context akan mengurus update state global dan memunculkan toast sukses
+                      await changeStatus(baseTicket.id, newStatus);
+                    } catch (err) {
+                      console.error('API Error:', err);
+                      // Context memunculkan toast error, kita hanya perlu melakukan Rollback UI di sini
+                      setLocalStatus(baseTicket.status); 
+                    }
+                  }
+                }}
               >
-                <option value="new">Baru</option>
-                <option value="progress">Sedang diproses</option>
-                <option value="done">Selesai</option>
+                <option value="open">Open</option>
+                <option value="progress">In Progress</option>
+                <option value="resolved">Resolved</option>
               </select>
             </div>
 

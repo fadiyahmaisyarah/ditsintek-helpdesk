@@ -41,6 +41,11 @@ export default function Faq() {
     return filteredFaqs.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredFaqs, currentPage]);
 
+  const paginatedTickets = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredFaqs.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredFaqs, currentPage]);
+
   function openAdd() {
     setEditingId(null);
     setModalOpen(true);

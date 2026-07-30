@@ -7,7 +7,7 @@ import {
 } from '../services/ticketService';
 import { useToast } from './ToastContext';
 import { useAuth } from './AuthContext';
-import { normalizeRoleKey } from '../utils/helpers';
+import { normalizeRoleKey, normalizeTicketStatus, isTerminalStatus } from '../utils/helpers';
 
 const TicketContext = createContext(null);
 
@@ -47,8 +47,10 @@ export function TicketProvider({ children }) {
   const filteredSortedTickets = useMemo(() => {
     let list = tickets.filter((t) => {
       const ticketRole = normalizeRoleKey(t.role);
+      const ticketStatus = normalizeTicketStatus(t.status);
       if (filterRole !== 'all' && ticketRole !== filterRole) return false;
       if (filterStatus !== 'all' && t.status !== filterStatus) return false;
+      if (filterStatus !== 'all' && ticketStatus !== filterStatus) return false;
       const q = search.toLowerCase();
       if (
         q &&
@@ -83,7 +85,7 @@ export function TicketProvider({ children }) {
   }, [tickets, filterRole, filterStatus, search, sortKey, sortDir]);
 
   const urgentTickets = useMemo(
-    () => tickets.filter((t) => t.status !== 'done' && t.wait >= 120),
+    () => tickets.filter((t) => !isTerminalStatus(t.status) && t.wait >= 120),
     [tickets]
   );
 
@@ -92,9 +94,24 @@ export function TicketProvider({ children }) {
   }
 
   async function changeStatus(id, newStatus) {
-    const updated = await updateTicketStatus(id, newStatus);
-    setTickets((prev) => prev.map((t) => (t.id === id ? updated : t)));
-    toast(`Status tiket diubah menjadi "${updated.status === 'new' ? 'Baru' : updated.status === 'progress' ? 'Diproses' : 'Selesai'}"`);
+    try {
+      await updateTicketStatus(id, newStatus);
+      
+      // Update state tiket secara manual dengan menimpa properti statusnya saja
+      setTickets((prev) => 
+        prev.map((t) => (t.id === id ? { ...t, status: newStatus } : t))
+      );
+      
+      // Gunakan newStatus untuk menampilkan label yang benar di Toast
+      const labelStatus = 
+        newStatus === 'open' ? 'Open' : 
+        newStatus === 'progress' ? 'In Progress' : 'Resolved'; 
+        
+      toast(`Status tiket diubah menjadi "${labelStatus}"`);
+    } catch (error) {
+      toast('Gagal memperbarui status ke server');
+      throw error; 
+    }
   }
 
   async function sendReply(id, text) {

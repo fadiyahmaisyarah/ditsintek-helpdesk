@@ -1,15 +1,16 @@
 import { useNavigate } from 'react-router-dom';
 import { useTickets } from '../context/TicketContext';
-import { roleLabel, statusLabel } from '../utils/helpers';
+import { roleLabel, statusBadgeClass, statusLabel } from '../utils/helpers';
 
 function SortArrow({ active, dir }) {
   if (!active) return <span className="arrow" />;
   return <span className="arrow">{dir === 'asc' ? '▲' : '▼'}</span>;
 }
 
-export default function TicketTable() {
+export default function TicketTable({ tickets: ticketsProp }) {
   const { filteredSortedTickets, sortKey, sortDir, setSort } = useTickets();
   const navigate = useNavigate();
+  const ticketsToRender = ticketsProp ?? filteredSortedTickets;
 
   // Konversi string t.role ke 'tendik' atau 'mhs' agar CSS lama kamu langsung nyangkut
   const getRoleClass = (role) => {
@@ -40,12 +41,12 @@ export default function TicketTable() {
         </tr>
       </thead>
       <tbody>
-        {filteredSortedTickets.length === 0 ? (
+        {ticketsToRender.length === 0 ? (
           <tr className="empty-row">
             <td colSpan={6}>Tidak ada tiket yang cocok dengan filter ini.</td>
           </tr>
         ) : (
-          filteredSortedTickets.map((t) => (
+          ticketsToRender.map((t) => (
             <tr className="row-link" key={t.id} onClick={() => navigate(`/tickets/${t.id}`)}>
               <td className="id-cell">{t.id}</td>
               <td className="who-cell">
@@ -57,7 +58,7 @@ export default function TicketTable() {
               </td>
               <td className="cat-tag">{t.kategori || t.category || 'Umum'}</td>
               <td>
-                <span className={`status-pill ${t.status}`}>{statusLabel(t.status)}</span>
+                <span className={`status-pill ${statusBadgeClass(t.status)}`}>{statusLabel(t.status)}</span>
               </td>
               <td className="pic-cell">{t.pic || '—'}</td>
               <td>

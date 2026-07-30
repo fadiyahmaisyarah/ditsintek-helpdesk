@@ -1,5 +1,5 @@
 import api from './api';
-import { normalizeRoleKey } from '../utils/helpers';
+import { normalizeRoleKey, normalizeTicketStatus } from '../utils/helpers';
 
 // Helper untuk merapikan nama role agar badge UI/balon warna membalas dengan benar
 function formatRole(role) {
@@ -10,10 +10,7 @@ function formatRole(role) {
 function mapTicketData(t) {
   if (!t) return null;
 
-  let mappedStatus = t.status || 'new';
-  if (t.status === 'open') mappedStatus = 'new';
-  if (t.status === 'in_progress') mappedStatus = 'progress';
-  if (t.status === 'resolved') mappedStatus = 'done';
+  const mappedStatus = normalizeTicketStatus(t.status);
 
   return {
     ...t,
@@ -62,16 +59,23 @@ export async function getTicketById(id) {
 // Ubah Status Tiket
 export async function updateTicketStatus(id, status, assignedTo = null) {
   try {
-    let backendStatus = status;
-    if (status === 'new') backendStatus = 'open';
-    if (status === 'progress') backendStatus = 'in_progress';
-    if (status === 'done') backendStatus = 'resolved';
+    const normalizedStatus = normalizeTicketStatus(status);
+    let backendStatus = normalizedStatus;
 
-    await api.put(`/tickets/${id}/status`, {
+    if (normalizedStatus === 'open') backendStatus = 'open';
+    if (normalizedStatus === 'progress') backendStatus = 'in_progress';
+    if (normalizedStatus === 'resolved') backendStatus = 'resolved';
+    if (normalizedStatus === 'closed') backendStatus = 'closed';
+
+    const response = await api.put(`/tickets/${id}/status`, {
       status: backendStatus,
       assigned_to: assignedTo,
     });
-    
+
+    if (response?.data?.data) {
+      return mapTicketData(response.data.data);
+    }
+
     return await getTicketById(id);
   } catch (error) {
     console.error('Error updating status:', error);
