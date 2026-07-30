@@ -28,24 +28,23 @@ export function FaqProvider({ children }) {
     });
   }, []);
 
-  // Perbaikan di sini: mendukung filter kategori ATAU pencarian teks bebas (pertanyaan/jawaban/kategori)
+  // Perbaikan lengkap di sini: mencocokkan teks lintas seluruh variasi properti database
   const filteredFaqs = useMemo(() => {
     if (!faqFilter || faqFilter === 'all') {
       return faqs;
     }
     const keyword = faqFilter.toLowerCase();
     
-    // Cek apakah faqFilter ini cocok sebagai kategori persis, ATAU mengandung teks di pertanyaan/jawaban/kategori
     return faqs.filter((f) => {
-      const matchCat = f.cat && f.cat.toLowerCase() === keyword;
-      const matchQuery = 
-        (f.q && f.q.toLowerCase().includes(keyword)) ||
-        (f.a && f.a.toLowerCase().includes(keyword)) ||
-        (f.cat && f.cat.toLowerCase().includes(keyword)) ||
-        (f.question && f.question.toLowerCase().includes(keyword)) ||
-        (f.answer && f.answer.toLowerCase().includes(keyword));
-      
-      return matchCat || matchQuery;
+      const qText = f.q || f.question || f.pertanyaan || '';
+      const aText = f.a || f.answer || f.jawaban || '';
+      const cText = f.cat || f.category || f.kategori || '';
+
+      return (
+        qText.toLowerCase().includes(keyword) ||
+        aText.toLowerCase().includes(keyword) ||
+        cText.toLowerCase().includes(keyword)
+      );
     });
   }, [faqs, faqFilter]);
 
