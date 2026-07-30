@@ -57,11 +57,11 @@ export default function Faq() {
 
   return (
     <AppShell>
-      {/* Topbar dengan Search Bar di pojok kanan atas */}
       <Topbar
         title="Kelola FAQ"
         description="Ini yang dibaca bot sebelum meneruskan ke manusia — makin lengkap, makin sedikit tiket yang masuk."
       >
+        {/* Style kotak pencarian disamakan persis dengan halaman antrean tiket */}
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
           <svg 
             width="15" 
@@ -70,7 +70,7 @@ export default function Faq() {
             fill="none" 
             stroke="currentColor" 
             strokeWidth="2" 
-            style={{ position: 'absolute', left: '12px', color: '#9ca3af', pointerEvents: 'none' }}
+            style={{ position: 'absolute', left: '12px', color: '#6b7280', pointerEvents: 'none' }}
           >
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -82,12 +82,13 @@ export default function Faq() {
             onChange={(e) => setFaqFilter(e.target.value)}
             style={{
               padding: '8px 12px 8px 36px',
-              borderRadius: '6px',
-              border: '1px solid #d1d5db',
+              borderRadius: '8px',
+              border: '1px solid transparent',
               fontSize: '13px',
               outline: 'none',
-              minWidth: '220px',
-              backgroundColor: '#fff'
+              width: '230px',
+              backgroundColor: '#eef1ec',
+              color: '#374151'
             }}
           />
         </div>
@@ -95,7 +96,6 @@ export default function Faq() {
 
       <div className="content">
         <div className="faq-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          {/* Teks counter jumlah FAQ terdaftar */}
           <div className="faq-count-text" style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>
             {filteredFaqs.length} FAQ terdaftar
           </div>
