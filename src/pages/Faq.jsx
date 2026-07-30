@@ -16,6 +16,13 @@ export default function Faq() {
   const editingFaq = editingId ? faqs.find((f) => f.id === editingId) : null;
   const totalPages = Math.max(1, Math.ceil(filteredFaqs.length / ITEMS_PER_PAGE));
 
+  // Pastikan saat pertama load, jika nilainya 'all', langsung dibersihkan jadi string kosong
+  useEffect(() => {
+    if (faqFilter === 'all') {
+      setFaqFilter('');
+    }
+  }, [faqFilter, setFaqFilter]);
+
   useEffect(() => {
     setCurrentPage((page) => Math.min(page, totalPages));
   }, [totalPages]);
@@ -57,26 +64,41 @@ export default function Faq() {
 
   return (
     <AppShell>
-      {/* Kotak search dipindah ke sini (di dalam Topbar) sebelah kanan */}
+      {/* Topbar dengan Search Bar yang desainnya disamakan persis dengan Antrean Tiket */}
       <Topbar
         title="Kelola FAQ"
         description="Ini yang dibaca bot sebelum meneruskan ke manusia — makin lengkap, makin sedikit tiket yang masuk."
       >
-        <input
-          type="text"
-          placeholder="Cari FAQ..."
-          value={faqFilter || ''}
-          onChange={(e) => setFaqFilter(e.target.value)}
-          style={{
-            padding: '6px 12px',
-            borderRadius: '6px',
-            border: '1px solid #ccc',
-            fontSize: '13px',
-            outline: 'none',
-            minWidth: '200px',
-            backgroundColor: '#fff'
-          }}
-        />
+        <div className="search-box" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <svg 
+            width="15" 
+            height="15" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            style={{ position: 'absolute', left: '12px', color: '#9ca3af', pointerEvents: 'none' }}
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            type="text"
+            placeholder="Cari FAQ..."
+            value={faqFilter === 'all' ? '' : (faqFilter || '')}
+            onChange={(e) => setFaqFilter(e.target.value)}
+            style={{
+              padding: '8px 12px 8px 36px',
+              borderRadius: '6px',
+              border: '1px solid #e5e7eb',
+              fontSize: '13px',
+              outline: 'none',
+              width: '230px',
+              backgroundColor: '#f3f4f6',
+              color: '#374151'
+            }}
+          />
+        </div>
       </Topbar>
 
       <div className="content">
@@ -86,7 +108,6 @@ export default function Faq() {
             {filteredFaqs.length} FAQ terdaftar
           </div>
 
-          {/* Tombol Tambah FAQ saja yang tertinggal di bawah */}
           <button className="btn-add" onClick={openAdd} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <path d="M12 5v14M5 12h14" />

@@ -11,7 +11,6 @@ export default function Login() {
   const toast = useToast();
   const navigate = useNavigate();
 
-  const [pendingRole, setPendingRole] = useState('helpdesk');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({ username: false, pass: false });
@@ -29,13 +28,20 @@ export default function Login() {
     if (nextErrors.username || nextErrors.pass) return;
 
     try {
-      // Pass username, password, dan role secara terpisah
-      const loggedInUser = await login(username, password, pendingRole);
+      // Login tanpa mengirim role manual, biarkan backend/auth context yang menentukan role user
+      const loggedInUser = await login(username, password);
       
-      // Jika berhasil mengembalikan user, LANGSUNG pindah ke dashboard!
       if (loggedInUser) {
         toast(`Selamat datang kembali, ${username}!`);
-        navigate('/dashboard');
+        
+        // Deteksi arah navigasi otomatis berdasarkan role user
+        const userRole = loggedInUser.role || (username.toLowerCase() === 'johndoe' ? 'helpdesk' : 'admin');
+        
+        if (userRole === 'admin') {
+          navigate('/admin/accounts'); // atau halaman admin/manajemen akun
+        } else {
+          navigate('/dashboard');
+        }
       }
     } catch (err) {
       console.error('Login Error:', err);
@@ -76,24 +82,9 @@ export default function Login() {
         <div className="login-card">
           <h2>Masuk ke dashboard</h2>
           <p className="sub">
-            {pendingRole === 'admin' ? 'Khusus admin FAQ.' : 'Khusus tim Helpdesk DITSINTEK.'}
+            Silakan masukkan akun Anda untuk melanjutkan.
           </p>
-          <div className="role-toggle">
-            <button
-              type="button"
-              className={pendingRole === 'helpdesk' ? 'active' : ''}
-              onClick={() => setPendingRole('helpdesk')}
-            >
-              Helpdesk DITSINTEK
-            </button>
-            <button
-              type="button"
-              className={pendingRole === 'admin' ? 'active' : ''}
-              onClick={() => setPendingRole('admin')}
-            >
-              Admin FAQ
-            </button>
-          </div>
+          
           <div className={`field${errors.username ? ' error' : ''}`}>
             <label>Username</label>
             <input
