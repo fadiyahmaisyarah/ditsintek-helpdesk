@@ -12,18 +12,21 @@ export function AuthProvider({ children }) {
 
   const isAuthenticated = !!user;
 
-  // VARIABEL INI YANG KEMAARIN KURANG: Memeriksa apakah role user itu 'admin'
-  const isAdmin = user?.role === 'admin' || user?.role === 'Admin';
+  // Cek apakah user adalah admin berdasarkan role ATAU jika username mengandung kata 'admin'
+  const isAdmin = user?.role === 'admin' || user?.role === 'Admin' || (user?.username && user.username.toLowerCase().includes('admin'));
 
-  const login = async (username, password, role = 'helpdesk') => {
+  const login = async (username, password, defaultRole = 'helpdesk') => {
     setLoggingIn(true);
     try {
       const response = await authService.login(username, password);
       
+      // Deteksi otomatis: Jika username mengandung kata 'admin', tetapkan role sebagai 'admin'
+      const assignedRole = username.toLowerCase().includes('admin') ? 'admin' : defaultRole;
+
       const userData = {
         username: username,
         name: username,
-        role: role, // menyimpan 'admin' atau 'helpdesk'
+        role: assignedRole, // Otomatis jadi 'admin' jika username-nya ada kata admin
         accessToken: response?.data?.accessToken,
         refreshToken: response?.data?.refreshToken,
       };
