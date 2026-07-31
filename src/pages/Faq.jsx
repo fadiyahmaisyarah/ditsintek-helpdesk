@@ -113,7 +113,7 @@ export default function Faq() {
         <div className="panel">
           <div className="faq-list">
             {filteredFaqs.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '32px', color: '#6b7280', fontSize: '14px' }}>
+              <div style={{ textAlign: 'center', padding: '48px 24px', color: '#6b7280', fontSize: '13px' }}>
                 Tidak ada FAQ yang cocok dengan filter ini.
               </div>
             ) : (
