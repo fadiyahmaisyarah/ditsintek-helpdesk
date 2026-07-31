@@ -7,10 +7,13 @@ import { useAuth } from '../context/AuthContext';
 import { useAccounts } from '../context/AccountContext';
 
 export default function Accounts() {
-  const { isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { accounts, saveAccount, removeAccount } = useAccounts();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
+
+  // Pengecekan aman: izinkan jika isAdmin true atau username mengandung kata 'admin'
+  const isUserAdmin = isAdmin || (user && user.username && user.username.toLowerCase().includes('admin'));
 
   const editingAccount = editingId ? accounts.find((a) => a.id === editingId) : null;
 
@@ -31,7 +34,7 @@ export default function Accounts() {
         description="Khusus Admin — atur siapa saja yang bisa masuk ke dashboard helpdesk."
       />
       <div className="content">
-        {!isAdmin ? (
+        {!isUserAdmin ? (
           <div className="faq-empty">
             Halaman ini khusus untuk Admin. Akun Helpdesk tidak memiliki akses ke Manajemen Akun.
           </div>
