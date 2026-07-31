@@ -33,7 +33,7 @@ export default function Login() {
       if (loggedInUser) {
         toast(`Selamat datang kembali, ${username}!`);
         
-        // Menangkap berbagai kemungkinan nama properti role dari backend atau berdasarkan username
+        // Deteksi role user dari backend atau fallback ke pengecekan username
         const role = (
           loggedInUser.role || 
           loggedInUser.level || 
@@ -41,10 +41,10 @@ export default function Login() {
           (username.toLowerCase() === 'johndoe' ? 'helpdesk' : 'admin')
         ).toLowerCase();
 
-        // Beri jeda singkat agar toast terbaca, lalu pindah halaman menggunakan replace navigate
+        // Beri jeda singkat agar toast terbaca, lalu arahkan ke rute yang sesuai App.jsx
         setTimeout(() => {
           if (role.includes('admin') || username.toLowerCase().includes('admin')) {
-            navigate('/users', { replace: true }); 
+            navigate('/accounts', { replace: true }); // Mengarah ke halaman Accounts.jsx
           } else {
             navigate('/dashboard', { replace: true });
           }
