@@ -22,7 +22,7 @@ export default function Login() {
       .slice(0, 3);
   }, [tickets]);
 
-async function handleLogin() {
+  async function handleLogin() {
     const nextErrors = { username: !username.trim(), pass: !password.trim() };
     setErrors(nextErrors);
     if (nextErrors.username || nextErrors.pass) return;
@@ -41,19 +41,21 @@ async function handleLogin() {
           (username.toLowerCase() === 'johndoe' ? 'helpdesk' : 'admin')
         ).toLowerCase();
 
-        // Cek apakah rolenya admin atau mengandung kata admin (seperti adminbejo)
-        if (role.includes('admin') || username.toLowerCase().includes('admin')) {
-          // Sesuaikan '/users' atau '/admin' dengan rute manajemen akun di App.jsx project kalian
-          navigate('/users'); 
-        } else {
-          navigate('/dashboard');
-        }
+        // Beri jeda singkat agar toast terbaca, lalu pindah halaman menggunakan replace navigate
+        setTimeout(() => {
+          if (role.includes('admin') || username.toLowerCase().includes('admin')) {
+            navigate('/users', { replace: true }); 
+          } else {
+            navigate('/dashboard', { replace: true });
+          }
+        }, 500);
       }
     } catch (err) {
       console.error('Login Error:', err);
       toast(err.message || 'Username atau password salah!');
     }
   }
+
   return (
     <div id="screen-login" className="screen active">
       <div className="login-visual">
