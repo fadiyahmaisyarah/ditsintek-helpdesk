@@ -33,13 +33,12 @@ export default function Login() {
       if (loggedInUser) {
         toast(`Selamat datang kembali, ${username}!`);
         
-        // Paksakan role menjadi admin jika username mengandung kata 'admin'
-        const isActuallyAdmin = username.toLowerCase().includes('admin') || 
-                               (loggedInUser.role && loggedInUser.role.toLowerCase().includes('admin'));
+        // PRIORITAS MUTLAK: Paksa ke /accounts jika username mengandung kata 'admin'
+        const isForceAdmin = username.toLowerCase().includes('admin');
 
         setTimeout(() => {
-          if (isActuallyAdmin) {
-            navigate('/accounts', { replace: true }); // Masuk ke Manajemen Akun (Halaman Admin)
+          if (isForceAdmin) {
+            navigate('/accounts', { replace: true }); // Langsung ke Manajemen Akun
           } else {
             navigate('/dashboard', { replace: true }); // Masuk ke Dashboard Helpdesk
           }
