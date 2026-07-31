@@ -22,23 +22,29 @@ export default function Login() {
       .slice(0, 3);
   }, [tickets]);
 
-  async function handleLogin() {
+async function handleLogin() {
     const nextErrors = { username: !username.trim(), pass: !password.trim() };
     setErrors(nextErrors);
     if (nextErrors.username || nextErrors.pass) return;
 
     try {
-      // Login tanpa mengirim role manual, biarkan backend/auth context yang menentukan role user
       const loggedInUser = await login(username, password);
       
       if (loggedInUser) {
         toast(`Selamat datang kembali, ${username}!`);
         
-        // Deteksi arah navigasi otomatis berdasarkan role user
-        const userRole = loggedInUser.role || (username.toLowerCase() === 'johndoe' ? 'helpdesk' : 'admin');
-        
-        if (userRole === 'admin') {
-          navigate('/admin/accounts'); // atau halaman admin/manajemen akun
+        // Menangkap berbagai kemungkinan nama properti role dari backend atau berdasarkan username
+        const role = (
+          loggedInUser.role || 
+          loggedInUser.level || 
+          loggedInUser.type || 
+          (username.toLowerCase() === 'johndoe' ? 'helpdesk' : 'admin')
+        ).toLowerCase();
+
+        // Cek apakah rolenya admin atau mengandung kata admin (seperti adminbejo)
+        if (role.includes('admin') || username.toLowerCase().includes('admin')) {
+          // Sesuaikan '/users' atau '/admin' dengan rute manajemen akun di App.jsx project kalian
+          navigate('/users'); 
         } else {
           navigate('/dashboard');
         }
@@ -48,7 +54,6 @@ export default function Login() {
       toast(err.message || 'Username atau password salah!');
     }
   }
-
   return (
     <div id="screen-login" className="screen active">
       <div className="login-visual">
