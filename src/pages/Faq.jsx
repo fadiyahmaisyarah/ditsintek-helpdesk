@@ -112,50 +112,48 @@ export default function Faq() {
 
         <div className="panel">
           <div className="faq-list">
-            <FaqTable faqs={paginatedFaqs} onEdit={openEdit} onDelete={removeFaq} />
-            
-            {/* Pesan jika data kosong atau tidak ditemukan saat dicari, persis seperti antrean tiket */}
-            {filteredFaqs.length === 0 && (
+            {filteredFaqs.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '32px', color: '#6b7280', fontSize: '14px' }}>
                 Tidak ada FAQ yang cocok dengan filter ini.
               </div>
-            )}
+            ) : (
+              <>
+                <FaqTable faqs={paginatedFaqs} onEdit={openEdit} onDelete={removeFaq} />
+                <div className="faq-pagination-wrap">
+                  <div className="faq-pagination" role="navigation" aria-label="Pagination FAQ">
+                    <button className="page-nav-btn" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M15 18l-6-6 6-6" />
+                      </svg>
+                      Prev
+                    </button>
 
-            {filteredFaqs.length > 0 && (
-              <div className="faq-pagination-wrap">
-                <div className="faq-pagination" role="navigation" aria-label="Pagination FAQ">
-                  <button className="page-nav-btn" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M15 18l-6-6 6-6" />
-                    </svg>
-                    Prev
-                  </button>
+                    {pageNumbers.map((page, index) =>
+                      page === 'ellipsis' ? (
+                        <span key={`ellipsis-${index}`} className="page-ellipsis">
+                          …
+                        </span>
+                      ) : (
+                        <button
+                          key={page}
+                          className={`page-number-btn${page === currentPage ? ' active' : ''}`}
+                          onClick={() => goToPage(page)}
+                          aria-current={page === currentPage ? 'page' : undefined}
+                        >
+                          {page}
+                        </button>
+                      )
+                    )}
 
-                  {pageNumbers.map((page, index) =>
-                    page === 'ellipsis' ? (
-                      <span key={`ellipsis-${index}`} className="page-ellipsis">
-                        …
-                      </span>
-                    ) : (
-                      <button
-                        key={page}
-                        className={`page-number-btn${page === currentPage ? ' active' : ''}`}
-                        onClick={() => goToPage(page)}
-                        aria-current={page === currentPage ? 'page' : undefined}
-                      >
-                        {page}
-                      </button>
-                    )
-                  )}
-
-                  <button className="page-nav-btn" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages}>
-                    Next
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M9 6l6 6-6 6" />
-                    </svg>
-                  </button>
+                    <button className="page-nav-btn" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages}>
+                      Next
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 6l6 6-6 6" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </>
             )}
           </div>
         </div>
