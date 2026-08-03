@@ -36,7 +36,7 @@ export default function Sidebar() {
       </NavLink>
 
       <div className="nav-divider" />
-      <div className="nav-label">Pengetahuan</div>
+      <div className="nav-label">Konteks Bot</div>
       <NavLink to="/faq" className={({ isActive }) => `nav-item${isActive ? ' on' : ''}`}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
           <circle cx="12" cy="12" r="9" />

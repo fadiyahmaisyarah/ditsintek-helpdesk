@@ -98,7 +98,7 @@ export default function Faq() {
 
       <div className="content">
         <div className="faq-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <div className="faq-count-text" style={{ fontSize: '14px', fontWeight: '500', color: '#555' }}>
+          <div className="faq-count-text" style={{ fontSize: 12.5, color: 'var(--ink-soft)' }}>
             {filteredFaqs.length} FAQ terdaftar
           </div>
 

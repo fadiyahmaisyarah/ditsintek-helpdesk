@@ -2,9 +2,11 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import {
   addTicketNote,
   getTickets,
+  getTicketNotes,
   sendTicketReply,
   updateTicketStatus,
 } from '../services/ticketService';
+import { getAccounts } from '../services/accountService';
 import { useToast } from './ToastContext';
 import { useAuth } from './AuthContext';
 import { normalizeRoleKey, normalizeTicketStatus, isTerminalStatus } from '../utils/helpers';
@@ -105,7 +107,8 @@ export function TicketProvider({ children }) {
       // Gunakan newStatus untuk menampilkan label yang benar di Toast
       const labelStatus = 
         newStatus === 'open' ? 'Open' : 
-        newStatus === 'progress' ? 'In Progress' : 'Resolved'; 
+        newStatus === 'progress' ? 'In Progress' : 
+        newStatus === 'resolved' ? 'Resolved' : 'Closed'; 
         
       toast(`Status tiket diubah menjadi "${labelStatus}"`);
     } catch (error) {
@@ -126,11 +129,34 @@ export function TicketProvider({ children }) {
     
 
   async function addNote(id, text) {
-    if (!text.trim()) return;
-    const author = user?.name || user?.username || 'User';
-    const updated = await addTicketNote(id, text.trim(), author);
-    setTickets((prev) => prev.map((t) => (t.id === id ? updated : t)));
+    const noteText = text.trim();
+    if (!noteText) return;
+
+    let idUser = user?.id_user || user?.id || user?.user_id;
+
+    if (!idUser) {
+      const accounts = await getAccounts();
+      const matchedUser = accounts.find((account) => {
+        const currentUsername = String(user?.username || user?.name || '').toLowerCase().trim();
+        const accountName = String(account?.name || '').toLowerCase().trim();
+        const accountEmail = String(account?.email || '').toLowerCase().trim();
+        return currentUsername && (accountName === currentUsername || accountEmail === currentUsername);
+      });
+
+      idUser = matchedUser?.id || matchedUser?.id_user || matchedUser?.user_id || null;
+    }
+
+    if (!idUser) {
+      toast('ID user belum tersedia, coba login ulang atau cek data user');
+      return;
+    }
+
+    await addTicketNote(id, idUser, noteText);
     toast('Catatan internal disimpan');
+  }
+
+  async function getNotes(id) {
+    return getTicketNotes(id);
   }
 
   const value = {
@@ -152,6 +178,7 @@ export function TicketProvider({ children }) {
     changeStatus,
     sendReply,
     addNote,
+    getNotes,
   };
 
   return <TicketContext.Provider value={value}>{children}</TicketContext.Provider>;

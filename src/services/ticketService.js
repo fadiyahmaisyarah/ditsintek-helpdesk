@@ -1,4 +1,5 @@
 import api from './api';
+import { getAccounts } from './accountService';
 import { normalizeRoleKey, normalizeTicketStatus } from '../utils/helpers';
 
 // Helper untuk merapikan nama role agar badge UI/balon warna membalas dengan benar
@@ -56,6 +57,46 @@ export async function getTicketById(id) {
   }
 }
 
+export async function getTicketNotes(id) {
+  try {
+    const response = await api.get(`/tickets/${id}/notes`);
+    const rawData = response.data?.data || [];
+    const accounts = await getAccounts();
+
+    const resolveAuthorName = (idUser) => {
+      if (!idUser) return 'User';
+
+      const targetId = String(idUser).toLowerCase().trim();
+      const matchedAccount = accounts.find((account) => {
+        const accountId = String(account?.id || account?.id_user || account?.user_id || '').toLowerCase().trim();
+        const accountName = String(account?.name || '').toLowerCase().trim();
+        const accountEmail = String(account?.email || '').toLowerCase().trim();
+        return targetId && (accountId === targetId || accountName === targetId || accountEmail === targetId);
+      });
+
+      return matchedAccount?.name || 'User';
+    };
+
+    return Array.isArray(rawData)
+      ? rawData.map((note) => ({
+          id_note: note.id_note,
+          id_ticket: note.id_ticket,
+          id_user: note.id_user,
+          text: note.note_text || note.text || '',
+          note_text: note.note_text || note.text || '',
+          author: resolveAuthorName(note.id_user),
+          created_at: note.created_at,
+          time: note.created_at
+            ? new Date(note.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : '',
+        }))
+      : [];
+  } catch (error) {
+    console.error('Error fetching ticket notes:', error);
+    return [];
+  }
+}
+
 // Ubah Status Tiket
 export async function updateTicketStatus(id, status, assignedTo = null) {
   try {
@@ -97,13 +138,17 @@ export async function sendTicketReply(id, text) {
   }
 }
 
-// Tambah Catatan Internal (Jika backend menyediakan endpoint notes)
-export async function addTicketNote(id, text, author) {
+// Tambah Catatan Internal dari backend notes
+export async function addTicketNote(id, idUser, noteText) {
   try {
-    await api.post(`/tickets/${id}/notes`, { note: text, author: author });
-    return await getTicketById(id);
+    const response = await api.post(`/tickets/${id}/notes`, {
+      id_user: idUser,
+      note_text: noteText,
+    });
+
+    return response.data?.data || null;
   } catch (error) {
     console.error('Error adding note:', error);
-    return await getTicketById(id);
+    throw error;
   }
 }

@@ -3,13 +3,15 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import AppShell from '../components/AppShell';
 import Topbar from '../components/Topbar';
+import { useAuth } from '../context/AuthContext';
 import { useTickets } from '../context/TicketContext';
-import { roleLabel, statusBadgeClass, statusLabel, waitClass, waitLabel } from '../utils/helpers';
+import { isTerminalStatus, roleLabel, statusBadgeClass, statusLabel, waitClass, waitLabel } from '../utils/helpers';
 
 export default function TicketDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { tickets, getTicket, changeStatus, sendReply, addNote } = useTickets();
+  const { tickets, getTicket, getNotes, changeStatus, sendReply, addNote } = useTickets();
+  const { user } = useAuth();
   
   const [replyText, setReplyText] = useState('');
   const [noteText, setNoteText] = useState('');
@@ -33,13 +35,7 @@ export default function TicketDetail() {
 
   const [messages, setMessages] = useState([]);
 
-  const storageKeyNotes = `ticket_notes_${id}`;
-
-  const [notes, setNotes] = useState(() => {
-    const saved = localStorage.getItem(storageKeyNotes);
-    if (saved) return JSON.parse(saved);
-    return baseTicket?.notes || [];
-  });
+  const [notes, setNotes] = useState([]);
 
   // REST API: Memuat riwayat chat lama saat pertama kali dibuka
   useEffect(() => {
@@ -98,22 +94,35 @@ export default function TicketDetail() {
 
   useEffect(() => {
     if (baseTicket) {
-      const savedNotes = localStorage.getItem(storageKeyNotes);
-      if (!savedNotes && baseTicket.notes) {
-        setNotes(baseTicket.notes);
-      }
-    }
-  }, [baseTicket, storageKeyNotes]);
-
-  useEffect(() => {
-    if (baseTicket) {
       setLocalStatus(baseTicket.status);
     }
   }, [baseTicket?.status]);
 
   useEffect(() => {
-    localStorage.setItem(storageKeyNotes, JSON.stringify(notes));
-  }, [notes, storageKeyNotes]);
+    let active = true;
+
+    async function loadNotes() {
+      if (!id) return;
+
+      try {
+        const ticketNotes = typeof getNotes === 'function' ? await getNotes(id) : [];
+        if (active) {
+          setNotes(ticketNotes);
+        }
+      } catch (error) {
+        console.error('Gagal memuat catatan tiket:', error);
+        if (active) {
+          setNotes(baseTicket?.notes || []);
+        }
+      }
+    }
+
+    loadNotes();
+
+    return () => {
+      active = false;
+    };
+  }, [id, baseTicket?.notes, getNotes]);
 
   useEffect(() => {
     if (threadRef.current) {
@@ -155,7 +164,7 @@ export default function TicketDetail() {
 
     const newNote = {
       text: noteText,
-      author: 'Dian Pratiwi',
+      author: user?.name || user?.username || 'User',
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
@@ -176,7 +185,7 @@ export default function TicketDetail() {
         title={baseTicket.id}
         description={
           'Diteruskan dari bot Telegram — ' +
-          (baseTicket.status === 'done' ? 'sudah selesai' : 'belum dibalas ' + waitLabel(baseTicket))
+          (isTerminalStatus(baseTicket.status) ? 'sudah selesai' : 'belum dibalas ' + waitLabel(baseTicket))
         }
       />
       <div className="content">
@@ -288,6 +297,7 @@ export default function TicketDetail() {
                 <option value="open">Open</option>
                 <option value="progress">In Progress</option>
                 <option value="resolved">Resolved</option>
+                <option value="closed">Closed</option>
               </select>
             </div>
 
@@ -297,9 +307,9 @@ export default function TicketDetail() {
                 {notes.length > 0 ? (
                   notes.map((n, i) => (
                     <div className="note-item" key={i} style={{ marginBottom: '8px' }}>
-                      <div style={{ fontWeight: 500 }}>{n.text}</div>
+                      <div style={{ fontWeight: 500 }}>{n.note_text || n.text}</div>
                       <small style={{ opacity: 0.7, display: 'block', marginTop: '2px' }}>
-                        {n.author || 'Dian Pratiwi'} · {n.time || ''}
+                        {n.author || 'User'} · {n.time || ''}
                       </small>
                     </div>
                   ))

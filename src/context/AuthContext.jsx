@@ -19,16 +19,19 @@ export function AuthProvider({ children }) {
     setLoggingIn(true);
     try {
       const response = await authService.login(username, password);
+      const responseUser = response?.data?.user || response?.data?.data || response?.data || {};
       
       // Deteksi otomatis: Jika username mengandung kata 'admin', tetapkan role sebagai 'admin'
       const assignedRole = username.toLowerCase().includes('admin') ? 'admin' : defaultRole;
 
       const userData = {
+        id_user: responseUser.id_user || responseUser.id || responseUser.user_id || null,
         username: username,
         name: username,
         role: assignedRole, // Otomatis jadi 'admin' jika username-nya ada kata admin
         accessToken: response?.data?.accessToken,
         refreshToken: response?.data?.refreshToken,
+        ...responseUser,
       };
 
       setUser(userData);
