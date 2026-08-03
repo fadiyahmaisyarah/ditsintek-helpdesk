@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Modal from './Modal';
 
-const EMPTY = { name: '', email: '', role: 'helpdesk', password: '' };
+const EMPTY = { name: '', username: '', role: 'helpdesk', password: '' };
 
 export default function AccountModal({ open, editingAccount, onClose, onSave }) {
   const [form, setForm] = useState(EMPTY);
@@ -12,7 +12,7 @@ export default function AccountModal({ open, editingAccount, onClose, onSave }) 
       setShowPass(false);
       setForm(
         editingAccount
-          ? { name: editingAccount.name, email: editingAccount.email, role: editingAccount.role, password: '' }
+          ? { name: editingAccount.name, username: editingAccount.username, role: editingAccount.role, password: '' }
           : EMPTY
       );
     }
@@ -44,11 +44,11 @@ export default function AccountModal({ open, editingAccount, onClose, onSave }) 
         />
       </div>
       <div className="field" style={{ marginTop: 12 }}>
-        <label>Email</label>
+        <label>Username</label>
         <input
-          placeholder="nama@usu.ac.id"
-          value={form.email}
-          onChange={(e) => handleChange('email', e.target.value)}
+          placeholder="username"
+          value={form.username}
+          onChange={(e) => handleChange('username', e.target.value)}
         />
       </div>
       <div className="field" style={{ marginTop: 12 }}>

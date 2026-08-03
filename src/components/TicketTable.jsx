@@ -1,10 +1,23 @@
 import { useNavigate } from 'react-router-dom';
 import { useTickets } from '../context/TicketContext';
-import { roleLabel, statusBadgeClass, statusLabel } from '../utils/helpers';
+import { formatDateTime, formatRelativeDuration, roleLabel, statusBadgeClass, statusLabel } from '../utils/helpers';
 
 function SortArrow({ active, dir }) {
   if (!active) return <span className="arrow" />;
   return <span className="arrow">{dir === 'asc' ? '▲' : '▼'}</span>;
+}
+
+function SortHeader({ label, active, dir, onClick, width }) {
+  return (
+    <th style={width ? { width } : undefined}>
+      <button type="button" className={`sort-btn${active ? ' active' : ''}`} onClick={onClick}>
+        <span>{label}</span>
+        <span className="sort-indicator">
+          {active ? <SortArrow active dir={dir} /> : <span className="sort-hint">↕</span>}
+        </span>
+      </button>
+    </th>
+  );
 }
 
 export default function TicketTable({ tickets: ticketsProp }) {
@@ -26,29 +39,24 @@ export default function TicketTable({ tickets: ticketsProp }) {
     <table>
       <thead>
         <tr>
-          <th onClick={() => setSort('id')}>
-            ID Tiket <SortArrow active={sortKey === 'id'} dir={sortDir} />
-          </th>
-          <th onClick={() => setSort('name')}>
-            Pengirim <SortArrow active={sortKey === 'name'} dir={sortDir} />
-          </th>
-          <th>Kategori</th>
-          <th onClick={() => setSort('status')}>
-            Status <SortArrow active={sortKey === 'status'} dir={sortDir} />
-          </th>
-          <th>PIC</th>
+          <SortHeader label="ID Tiket" active={sortKey === 'id'} dir={sortDir} onClick={() => setSort('id')} width={96} />
+          <SortHeader label="Pengirim" active={sortKey === 'name'} dir={sortDir} onClick={() => setSort('name')} />
+          <SortHeader label="Status" active={sortKey === 'status'} dir={sortDir} onClick={() => setSort('status')} width={120} />
+          <th style={{ width: 170 }}>PIC</th>
+          <SortHeader label="Waktu Diajukan" active={sortKey === 'created_at'} dir={sortDir} onClick={() => setSort('created_at')} width={180} />
+          <SortHeader label="Waktu Tunggu" active={sortKey === 'wait'} dir={sortDir} onClick={() => setSort('wait')} width={140} />
           <th style={{ width: 36 }} />
         </tr>
       </thead>
       <tbody>
         {ticketsToRender.length === 0 ? (
           <tr className="empty-row">
-            <td colSpan={6}>Tidak ada tiket yang cocok dengan filter ini.</td>
+            <td colSpan={7}>Tidak ada tiket yang cocok dengan filter ini.</td>
           </tr>
         ) : (
           ticketsToRender.map((t) => (
             <tr className="row-link" key={t.id} onClick={() => navigate(`/tickets/${t.id}`)}>
-              <td className="id-cell">{t.id}</td>
+              <td className="id-cell id-cell-tight">{t.id}</td>
               <td className="who-cell">
                 <b>{t.name}</b>
                 {/* Pakai getRoleClass(t.role) agar class 'mhs' atau 'tendik' selalu terpanggil */}
@@ -56,11 +64,12 @@ export default function TicketTable({ tickets: ticketsProp }) {
                   {roleLabel(t.role)}
                 </span>
               </td>
-              <td className="cat-tag">{t.kategori || t.category || 'Umum'}</td>
               <td>
                 <span className={`status-pill ${statusBadgeClass(t.status)}`}>{statusLabel(t.status)}</span>
               </td>
-              <td className="pic-cell">{t.pic || '—'}</td>
+              <td className="pic-cell">{t.assigned_to_name || t.pic || '—'}</td>
+              <td className="time-cell">{formatDateTime(t.created_at)}</td>
+              <td className="time-cell">{formatRelativeDuration(t.updated_at)}</td>
               <td>
                 <div
                   className="detail-arrow"

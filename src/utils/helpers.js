@@ -31,6 +31,33 @@ export function waitPct(t) {
   return Math.min(100, Math.round((t.wait / 180) * 100));
 }
 
+export function formatDateTime(value) {
+  if (!value) return '—';
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+
+  return new Intl.DateTimeFormat('id-ID', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date);
+}
+
+export function formatRelativeDuration(startValue) {
+  if (!startValue) return '—';
+
+  const startDate = new Date(startValue);
+  if (Number.isNaN(startDate.getTime())) return '—';
+
+  const diffMinutes = Math.max(0, Math.floor((Date.now() - startDate.getTime()) / (1000 * 60)));
+  const hours = Math.floor(diffMinutes / 60);
+  const minutes = diffMinutes % 60;
+
+  if (hours <= 0) return `${minutes}m`;
+  if (minutes === 0) return `${hours}j`;
+  return `${hours}j ${minutes}m`;
+}
+
 export function statusLabel(s) {
   const normalized = normalizeTicketStatus(s);
   if (normalized === 'open') return 'Open';

@@ -3,12 +3,13 @@ import AppShell from '../components/AppShell';
 import Topbar from '../components/Topbar';
 import AccountTable from '../components/AccountTable';
 import AccountModal from '../components/AccountModal';
+import { TableSkeleton } from '../components/LoadingSkeleton';
 import { useAuth } from '../context/AuthContext';
 import { useAccounts } from '../context/AccountContext';
 
 export default function Accounts() {
   const { user, isAdmin } = useAuth();
-  const { accounts, saveAccount, removeAccount } = useAccounts();
+  const { accounts, loading, saveAccount, removeAccount } = useAccounts();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
@@ -52,7 +53,11 @@ export default function Accounts() {
               </button>
             </div>
             <div className="panel">
-              <AccountTable accounts={accounts} onEdit={openEdit} onDelete={removeAccount} />
+              {loading ? (
+                <TableSkeleton rows={4} columns={4} />
+              ) : (
+                <AccountTable accounts={accounts} onEdit={openEdit} onDelete={removeAccount} />
+              )}
             </div>
           </>
         )}

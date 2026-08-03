@@ -21,15 +21,15 @@ export function AccountProvider({ children }) {
     });
   }, []);
 
-  async function saveAccount(id, { name, email, role, password }) {
-    if (!name.trim() || !email.trim()) {
-      toast('Isi nama dan email dulu ya');
+  async function saveAccount(id, { name, username, role, password }) {
+    if (!name.trim() || !username.trim()) {
+      toast('Isi nama dan username dulu ya');
       return false;
     }
     if (id) {
       const updated = await updateAccountRequest(id, {
         name: name.trim(),
-        email: email.trim(),
+        username: username.trim(),
         role,
         password,
       });
@@ -42,7 +42,7 @@ export function AccountProvider({ children }) {
       }
       const created = await createAccountRequest({
         name: name.trim(),
-        email: email.trim(),
+        username: username.trim(),
         role,
         password,
       });

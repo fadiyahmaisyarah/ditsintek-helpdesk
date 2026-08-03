@@ -6,7 +6,7 @@ export default function AccountTable({ accounts, onEdit, onDelete }) {
       <thead>
         <tr>
           <th>Nama</th>
-          <th>Email</th>
+          <th>Username</th>
           <th>Peran</th>
           <th style={{ width: 80 }}>Aksi</th>
         </tr>
@@ -18,7 +18,7 @@ export default function AccountTable({ accounts, onEdit, onDelete }) {
               <b>{a.name}</b>
             </td>
             <td className="mono" style={{ color: 'var(--ink-soft)', fontSize: 12.5 }}>
-              {a.email}
+              {a.username}
             </td>
             <td>
               <span className={`role-tag ${a.role === 'admin' ? 'tendik' : 'mhs'}`}>

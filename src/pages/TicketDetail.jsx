@@ -1,21 +1,25 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import AppShell from '../components/AppShell';
 import Topbar from '../components/Topbar';
+import { TicketDetailSkeleton } from '../components/LoadingSkeleton';
 import { useAuth } from '../context/AuthContext';
 import { useTickets } from '../context/TicketContext';
+import { getAccounts } from '../services/accountService';
 import { isTerminalStatus, roleLabel, statusBadgeClass, statusLabel, waitClass, waitLabel } from '../utils/helpers';
 
 export default function TicketDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { tickets, getTicket, getNotes, changeStatus, sendReply, addNote } = useTickets();
-  const { user } = useAuth();
+  const { tickets, loading, getTicket, getNotes, changeStatus, sendReply, addNote } = useTickets();
+  const { user, isAdmin } = useAuth();
   
   const [replyText, setReplyText] = useState('');
   const [noteText, setNoteText] = useState('');
   const [toastMessage, setToastMessage] = useState('');
+  const [assignableUsers, setAssignableUsers] = useState([]);
+  const [selectedAssignee, setSelectedAssignee] = useState('');
   
   // State untuk memaksa komponen me-render ulang setiap 1 menit agar waktu tunggu terhitung real-time terhadap jam sekarang
   const [, setTick] = useState(0);
@@ -36,6 +40,12 @@ export default function TicketDetail() {
   const [messages, setMessages] = useState([]);
 
   const [notes, setNotes] = useState([]);
+
+  const resolvedAssigneeName = useMemo(() => {
+    if (!baseTicket?.assigned_to) return '';
+    const matchedUser = assignableUsers.find((account) => String(account.id) === String(baseTicket.assigned_to));
+    return matchedUser?.name || '';
+  }, [assignableUsers, baseTicket?.assigned_to]);
 
   // REST API: Memuat riwayat chat lama saat pertama kali dibuka
   useEffect(() => {
@@ -101,6 +111,37 @@ export default function TicketDetail() {
   useEffect(() => {
     let active = true;
 
+    async function loadAssignableUsers() {
+      try {
+        const accounts = await getAccounts();
+        const staffUsers = accounts.filter((account) => {
+          const role = String(account?.role || '').toLowerCase();
+          return role === 'helpdesk' || role === 'admin';
+        });
+
+        if (active) {
+          setAssignableUsers(staffUsers);
+          setSelectedAssignee(baseTicket?.assigned_to || '');
+        }
+      } catch (error) {
+        console.error('Gagal memuat daftar user assign:', error);
+        if (active) {
+          setAssignableUsers([]);
+          setSelectedAssignee(baseTicket?.assigned_to || '');
+        }
+      }
+    }
+
+    loadAssignableUsers();
+
+    return () => {
+      active = false;
+    };
+  }, [baseTicket?.assigned_to]);
+
+  useEffect(() => {
+    let active = true;
+
     async function loadNotes() {
       if (!id) return;
 
@@ -130,11 +171,20 @@ export default function TicketDetail() {
     }
   }, [messages]);
 
+  if (loading) {
+    return (
+      <AppShell>
+        <Topbar title="Tiket" description="—" />
+        <TicketDetailSkeleton />
+      </AppShell>
+    );
+  }
+
   if (!baseTicket) {
     return (
       <AppShell>
         <Topbar title="Tiket" description="—" />
-        <div className="content">Memuat tiket...</div>
+        <div className="content">Tiket tidak ditemukan.</div>
       </AppShell>
     );
   }
@@ -174,6 +224,18 @@ export default function TicketDetail() {
 
     try {
       if (addNote) await addNote(baseTicket.id, textToSend);
+    } catch (err) {
+      console.error('API Error:', err);
+    }
+  }
+
+  async function handleAssignPic() {
+    if (!selectedAssignee) return;
+
+    try {
+      if (changeStatus) {
+        await changeStatus(baseTicket.id, localStatus, selectedAssignee);
+      }
     } catch (err) {
       console.error('API Error:', err);
     }
@@ -300,6 +362,36 @@ export default function TicketDetail() {
                 <option value="closed">Closed</option>
               </select>
             </div>
+
+            {isAdmin && (
+              <div className="side-card">
+                <h4>ASSIGN PIC</h4>
+                <div className="kv" style={{ marginBottom: '10px' }}>
+                  <span>PIC saat ini</span>
+                  <span>{resolvedAssigneeName || 'Belum di-assign'}</span>
+                </div>
+                <select
+                  className="status-select"
+                  value={selectedAssignee}
+                  onChange={(e) => setSelectedAssignee(e.target.value)}
+                >
+                  <option value="">Pilih PIC</option>
+                  {assignableUsers.map((account) => (
+                    <option key={account.id} value={account.id}>
+                      {account.name} · {account.role}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  className="btn-outline"
+                  onClick={handleAssignPic}
+                  disabled={!selectedAssignee}
+                  style={{ marginTop: '10px', width: '100%' }}
+                >
+                  Simpan PIC
+                </button>
+              </div>
+            )}
 
             <div className="side-card">
               <h4>CATATAN INTERNAL</h4>

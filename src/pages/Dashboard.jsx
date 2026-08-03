@@ -3,6 +3,7 @@ import AppShell from '../components/AppShell';
 import Topbar from '../components/Topbar';
 import StatCard from '../components/StatCard';
 import TicketTable from '../components/TicketTable';
+import { DashboardSkeleton } from '../components/LoadingSkeleton';
 import { useTickets } from '../context/TicketContext';
 import { normalizeTicketStatus } from '../utils/helpers';
 
@@ -12,11 +13,52 @@ const ROLE_CHIPS = [
   ['tendik', 'Tenaga Didik'],
 ];
 
+const STATUS_CHIPS = [
+  ['all', 'Semua Status'],
+  ['open', 'Open'],
+  ['progress', 'In Progress'],
+  ['resolved', 'Resolved'],
+  ['closed', 'Closed'],
+];
+
 const ITEMS_PER_PAGE = 10;
 
 export default function Dashboard() {
-  const { tickets, filterRole, setFilterRoleChip, search, setSearch, filteredSortedTickets } = useTickets();
+  const {
+    tickets,
+    loading,
+    filterRole,
+    filterStatus,
+    filterPic,
+    setFilterRoleChip,
+    setFilterStatus,
+    setFilterPicChip,
+    search,
+    setSearch,
+    filteredSortedTickets,
+  } = useTickets();
   const [currentPage, setCurrentPage] = useState(1);
+
+  if (loading) {
+    return (
+      <AppShell>
+        <Topbar title="Antrean Tiket" description="Diurutkan dari tiket terbaru — klik header kolom untuk mengurutkan ulang." />
+        <DashboardSkeleton />
+      </AppShell>
+    );
+  }
+
+  const picOptions = useMemo(() => {
+    const names = new Map();
+    tickets.forEach((ticket) => {
+      const name = ticket.assigned_to_name || ticket.pic;
+      if (!name) return;
+      const key = String(name).toLowerCase().trim();
+      if (!names.has(key)) names.set(key, name);
+    });
+
+    return Array.from(names.entries()).map(([value, label]) => ({ value, label }));
+  }, [tickets]);
 
   const openN = tickets.filter((t) => normalizeTicketStatus(t.status) === 'open').length;
   const inprogressN = tickets.filter((t) => normalizeTicketStatus(t.status) === 'progress').length;
@@ -62,7 +104,7 @@ export default function Dashboard() {
             <path d="M21 21l-4.3-4.3" />
           </svg>
           <input
-            placeholder="Cari nama, kategori..."
+            placeholder="Cari nama, PIC, ID tiket..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -77,17 +119,42 @@ export default function Dashboard() {
         </div>
         <div className="panel">
           <div className="panel-head">
-            <h3>Semua tiket</h3>
-            <div className="filters">
-              {ROLE_CHIPS.map(([key, label]) => (
-                <div
-                  key={key}
-                  className={`chip${filterRole === key ? ' on' : ''}`}
-                  onClick={() => setFilterRoleChip(key)}
-                >
-                  {label}
-                </div>
-              ))}
+            <div className="panel-head-left">
+              <h3>Semua tiket</h3>
+              <div className="filters filters-chips">
+                {ROLE_CHIPS.map(([key, label]) => (
+                  <div
+                    key={key}
+                    className={`chip${filterRole === key ? ' on' : ''}`}
+                    onClick={() => setFilterRoleChip(key)}
+                  >
+                    {label}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="filters filters-selects">
+              <label className="filter-select-wrap">
+                <span>Status</span>
+                <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                  {STATUS_CHIPS.map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="filter-select-wrap">
+                <span>PIC</span>
+                <select value={filterPic} onChange={(e) => setFilterPicChip(e.target.value)}>
+                  <option value="all">Semua PIC</option>
+                  {picOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
           </div>
           <TicketTable tickets={paginatedTickets} />

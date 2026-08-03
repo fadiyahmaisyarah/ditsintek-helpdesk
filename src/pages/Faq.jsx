@@ -3,12 +3,13 @@ import AppShell from '../components/AppShell';
 import Topbar from '../components/Topbar';
 import FaqTable from '../components/FaqTable';
 import FaqModal from '../components/FaqModal';
+import { TableSkeleton } from '../components/LoadingSkeleton';
 import { useFaqs } from '../context/FaqContext';
 
 const ITEMS_PER_PAGE = 10;
 
 export default function Faq() {
-  const { faqs, filteredFaqs, faqFilter, setFaqFilter, saveFaq, removeFaq } = useFaqs();
+  const { faqs, loading, filteredFaqs, faqFilter, setFaqFilter, saveFaq, removeFaq } = useFaqs();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -112,7 +113,9 @@ export default function Faq() {
 
         <div className="panel">
           <div className="faq-list">
-           {filteredFaqs.length === 0 ? (
+           {loading ? (
+              <TableSkeleton rows={6} columns={5} />
+            ) : filteredFaqs.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '40px 24px', color: '#9ca3af', fontSize: '13px', fontWeight: '400' }}>
                 Tidak ada FAQ yang cocok dengan filter ini.
               </div>

@@ -1,16 +1,58 @@
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { getAccounts } from '../services/accountService';
+import { accRoleLabel } from '../utils/helpers';
 
 export default function Sidebar() {
   const { user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
+  const [resolvedName, setResolvedName] = useState('User');
 
   function handleLogout() {
     logout();
     navigate('/login');
   }
 
-  const displayName = user?.name || user?.username || 'User';
+  useEffect(() => {
+    let active = true;
+
+    async function resolveName() {
+      const fallbackName = user?.name || user?.username || 'User';
+      const activeUsername = String(user?.username || '').toLowerCase().trim();
+
+      try {
+        const accounts = await getAccounts();
+        const matchedAccount = accounts.find((account) => {
+          const accountUsername = String(account?.username || '').toLowerCase().trim();
+          const accountName = String(account?.name || '').toLowerCase().trim();
+          const accountId = String(account?.id || '').toLowerCase().trim();
+
+          return (
+            activeUsername &&
+            (accountUsername === activeUsername || accountName === activeUsername || accountId === activeUsername)
+          );
+        });
+
+        if (active) {
+          setResolvedName(matchedAccount?.name || fallbackName);
+        }
+      } catch (error) {
+        if (active) {
+          setResolvedName(fallbackName);
+        }
+      }
+    }
+
+    resolveName();
+
+    return () => {
+      active = false;
+    };
+  }, [user?.username, user?.name]);
+
+  const displayName = resolvedName;
+  const displayRole = user?.role ? accRoleLabel(user.role) : (isAdmin ? 'Admin' : 'Helpdesk');
   const avatarText = (displayName || 'U')
     .split(/\s+/)
     .filter(Boolean)
@@ -75,7 +117,7 @@ export default function Sidebar() {
         <div className="avatar">{avatarText}</div>
         <div className="who">
           <b>{displayName}</b>
-          <small>{isAdmin ? 'Admin' : 'Helpdesk'}</small>
+          <small>{displayRole}</small>
         </div>
       </div>
     </div>

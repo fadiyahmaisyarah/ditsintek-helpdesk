@@ -12,6 +12,8 @@ function mapTicketData(t) {
   if (!t) return null;
 
   const mappedStatus = normalizeTicketStatus(t.status);
+  const createdAt = t.created_at || t.createdAt || null;
+  const updatedAt = t.updated_at || t.updatedAt || createdAt;
 
   return {
     ...t,
@@ -20,16 +22,20 @@ function mapTicketData(t) {
     role: formatRole(t.reporter_role || t.role), // Merapikan role agar balon warna muncul
     kategori: t.category || t.kategori || 'Umum',
     status: mappedStatus,
+    assigned_to: t.assigned_to || null,
+    assigned_to_name: t.assigned_to_name || t.assignedToName || '',
+    created_at: createdAt,
+    updated_at: updatedAt,
     description: t.description || '',
     messages: Array.isArray(t.messages) && t.messages.length > 0 ? t.messages : [
       {
         who: 'user',
         text: t.description || 'Tidak ada deskripsi pesan.',
-        time: t.created_at ? new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''
+        time: createdAt ? new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''
       }
     ],
     notes: Array.isArray(t.notes) ? t.notes : [],
-    wait: t.created_at ? Math.floor((new Date() - new Date(t.created_at)) / (1000 * 60)) : 0
+    wait: updatedAt ? Math.floor((new Date() - new Date(updatedAt)) / (1000 * 60)) : 0
   };
 }
 
@@ -70,8 +76,8 @@ export async function getTicketNotes(id) {
       const matchedAccount = accounts.find((account) => {
         const accountId = String(account?.id || account?.id_user || account?.user_id || '').toLowerCase().trim();
         const accountName = String(account?.name || '').toLowerCase().trim();
-        const accountEmail = String(account?.email || '').toLowerCase().trim();
-        return targetId && (accountId === targetId || accountName === targetId || accountEmail === targetId);
+        const accountUsername = String(account?.username || '').toLowerCase().trim();
+        return targetId && (accountId === targetId || accountName === targetId || accountUsername === targetId);
       });
 
       return matchedAccount?.name || 'User';
@@ -98,7 +104,7 @@ export async function getTicketNotes(id) {
 }
 
 // Ubah Status Tiket
-export async function updateTicketStatus(id, status, assignedTo = null) {
+export async function updateTicketStatus(id, status, assignedTo) {
   try {
     const normalizedStatus = normalizeTicketStatus(status);
     let backendStatus = normalizedStatus;
@@ -108,10 +114,15 @@ export async function updateTicketStatus(id, status, assignedTo = null) {
     if (normalizedStatus === 'resolved') backendStatus = 'resolved';
     if (normalizedStatus === 'closed') backendStatus = 'closed';
 
-    const response = await api.put(`/tickets/${id}/status`, {
+    const payload = {
       status: backendStatus,
-      assigned_to: assignedTo,
-    });
+    };
+
+    if (assignedTo !== undefined) {
+      payload.assigned_to = assignedTo;
+    }
+
+    const response = await api.put(`/tickets/${id}/status`, payload);
 
     if (response?.data?.data) {
       return mapTicketData(response.data.data);

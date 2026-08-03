@@ -21,8 +21,9 @@ export function TicketProvider({ children }) {
 
   const [filterRole, setFilterRole] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterPic, setFilterPic] = useState('all');
   const [search, setSearch] = useState('');
-  const [sortKey, setSortKey] = useState('id');
+  const [sortKey, setSortKey] = useState('updated_at');
   const [sortDir, setSortDir] = useState('desc');
 
   useEffect(() => {
@@ -46,6 +47,10 @@ export function TicketProvider({ children }) {
     if (filterStatus === 'unanswered') setFilterStatus('all');
   }
 
+  function setFilterPicChip(value) {
+    setFilterPic(value);
+  }
+
   const filteredSortedTickets = useMemo(() => {
     let list = tickets.filter((t) => {
       const ticketRole = normalizeRoleKey(t.role);
@@ -53,13 +58,15 @@ export function TicketProvider({ children }) {
       if (filterRole !== 'all' && ticketRole !== filterRole) return false;
       if (filterStatus !== 'all' && t.status !== filterStatus) return false;
       if (filterStatus !== 'all' && ticketStatus !== filterStatus) return false;
+      if (filterPic !== 'all' && String(t.assigned_to_name || t.pic || '').toLowerCase() !== filterPic) return false;
       const q = search.toLowerCase();
       if (
         q &&
         !(
           t.name.toLowerCase().includes(q) ||
           t.kategori.toLowerCase().includes(q) ||
-          t.id.toLowerCase().includes(q)
+          t.id.toLowerCase().includes(q) ||
+          String(t.assigned_to_name || t.pic || '').toLowerCase().includes(q)
         )
       )
         return false;
@@ -72,6 +79,15 @@ export function TicketProvider({ children }) {
       if (sortKey === 'name') {
         av = a.name;
         bv = b.name;
+      } else if (sortKey === 'created_at') {
+        av = new Date(a.created_at || 0).getTime();
+        bv = new Date(b.created_at || 0).getTime();
+      } else if (sortKey === 'updated_at') {
+        av = new Date(a.updated_at || 0).getTime();
+        bv = new Date(b.updated_at || 0).getTime();
+      } else if (sortKey === 'wait') {
+        av = a.wait || 0;
+        bv = b.wait || 0;
       } else if (sortKey === 'status') {
         av = a.status;
         bv = b.status;
@@ -84,7 +100,7 @@ export function TicketProvider({ children }) {
       return 0;
     });
     return list;
-  }, [tickets, filterRole, filterStatus, search, sortKey, sortDir]);
+  }, [tickets, filterRole, filterStatus, filterPic, search, sortKey, sortDir]);
 
   const urgentTickets = useMemo(
     () => tickets.filter((t) => !isTerminalStatus(t.status) && t.wait >= 120),
@@ -95,22 +111,45 @@ export function TicketProvider({ children }) {
     return tickets.find((t) => t.id === id);
   }
 
-  async function changeStatus(id, newStatus) {
+  async function changeStatus(id, newStatus, assignedTo = null) {
     try {
-      await updateTicketStatus(id, newStatus);
+      const currentTicket = tickets.find((ticket) => ticket.id === id);
+      const nextAssignedTo = assignedTo !== null ? assignedTo : currentTicket?.assigned_to;
+      const updated = await updateTicketStatus(id, newStatus, nextAssignedTo);
       
-      // Update state tiket secara manual dengan menimpa properti statusnya saja
+      // Update state tiket secara manual dengan menimpa status dan PIC jika ada
       setTickets((prev) => 
-        prev.map((t) => (t.id === id ? { ...t, status: newStatus } : t))
+        prev.map((t) =>
+          t.id === id
+            ? {
+                ...t,
+                ...updated,
+                status: updated?.status || newStatus,
+                assigned_to: updated?.assigned_to ?? nextAssignedTo ?? t.assigned_to,
+              }
+            : t
+        )
       );
       
-      // Gunakan newStatus untuk menampilkan label yang benar di Toast
-      const labelStatus = 
-        newStatus === 'open' ? 'Open' : 
-        newStatus === 'progress' ? 'In Progress' : 
-        newStatus === 'resolved' ? 'Resolved' : 'Closed'; 
-        
-      toast(`Status tiket diubah menjadi "${labelStatus}"`);
+      const labelStatus =
+        newStatus === 'open'
+          ? 'Open'
+          : newStatus === 'progress'
+            ? 'In Progress'
+            : newStatus === 'resolved'
+              ? 'Resolved'
+              : 'Closed';
+
+      const currentStatus = normalizeTicketStatus(currentTicket?.status);
+      const nextStatus = normalizeTicketStatus(newStatus);
+
+      if (assignedTo !== null && currentStatus === nextStatus) {
+        toast('PIC tiket berhasil diperbarui');
+      } else if (assignedTo !== null) {
+        toast(`Status tiket dan PIC diubah menjadi "${labelStatus}"`);
+      } else {
+        toast(`Status tiket diubah menjadi "${labelStatus}"`);
+      }
     } catch (error) {
       toast('Gagal memperbarui status ke server');
       throw error; 
@@ -139,8 +178,8 @@ export function TicketProvider({ children }) {
       const matchedUser = accounts.find((account) => {
         const currentUsername = String(user?.username || user?.name || '').toLowerCase().trim();
         const accountName = String(account?.name || '').toLowerCase().trim();
-        const accountEmail = String(account?.email || '').toLowerCase().trim();
-        return currentUsername && (accountName === currentUsername || accountEmail === currentUsername);
+        const accountUsername = String(account?.username || '').toLowerCase().trim();
+        return currentUsername && (accountName === currentUsername || accountUsername === currentUsername);
       });
 
       idUser = matchedUser?.id || matchedUser?.id_user || matchedUser?.user_id || null;
@@ -164,12 +203,15 @@ export function TicketProvider({ children }) {
     loading,
     filterRole,
     filterStatus,
+    filterPic,
     search,
     sortKey,
     sortDir,
     setFilterRole,
     setFilterRoleChip,
     setFilterStatus,
+    setFilterPic,
+    setFilterPicChip,
     setSearch,
     setSort,
     filteredSortedTickets,
