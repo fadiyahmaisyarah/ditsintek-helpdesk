@@ -297,7 +297,7 @@ export default function TicketDetail() {
 
             <div className="reply-box">
               <textarea
-                placeholder="Tulis balasan... (terhubung real-time via Socket.io)"
+                placeholder="Tulis balasan..."
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
               />

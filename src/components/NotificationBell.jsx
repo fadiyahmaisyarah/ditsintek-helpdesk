@@ -37,7 +37,7 @@ export default function NotificationBell() {
       </svg>
       {urgentTickets.length > 0 && <span className="badge">{urgentTickets.length}</span>}
       <div className={`notif-dd${open ? ' open' : ''}`}>
-        <div className="nd-head">Tiket belum dibalas &gt; 2 jam</div>
+        <div className="nd-head">Perlu Pembaruan Status (&gt; 2 jam)</div>
         {urgentTickets.length ? (
           urgentTickets.map((t) => (
             <div className="nd-item" key={t.id} onClick={() => handleOpenTicket(t.id)}>
@@ -46,7 +46,7 @@ export default function NotificationBell() {
             </div>
           ))
         ) : (
-          <div className="nd-empty">Tidak ada tiket mendesak 🎉</div>
+          <div className="nd-empty">Semua tiket tertangani tepat waktu 🎉</div>
         )}
       </div>
     </div>
