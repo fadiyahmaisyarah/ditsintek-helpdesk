@@ -88,13 +88,12 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <AppShell>
+      <>
         <Topbar title="Antrean Tiket" description="Diurutkan dari tiket terbaru — klik header kolom untuk mengurutkan ulang." />
         <DashboardSkeleton />
-      </AppShell>
+      </>
     );
   }
-  
   return (
     <>
       <Topbar title="Antrean Tiket" description="Diurutkan dari tiket terbaru — klik header kolom untuk mengurutkan ulang.">

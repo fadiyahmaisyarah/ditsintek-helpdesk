@@ -1,16 +1,15 @@
-import { createContext, useEffect, useContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import * as authService from '../services/authService';
 import { getAccounts } from '../services/accountService';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
   const [loggingIn, setLoggingIn] = useState(false);
-
-  useEffect(() => {
-    localStorage.removeItem('user');
-  }, []);
 
   const isAuthenticated = !!user;
 
@@ -60,7 +59,7 @@ export function AuthProvider({ children }) {
       };
 
       setUser(userData);
-      localStorage.removeItem('user');
+      localStorage.setItem('user', JSON.stringify(userData));
 
       return userData;
     } catch (error) {
