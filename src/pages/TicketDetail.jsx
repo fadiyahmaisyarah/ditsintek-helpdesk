@@ -8,6 +8,27 @@ import { useTickets } from '../context/TicketContext';
 import { getAccounts } from '../services/accountService';
 import { isTerminalStatus, roleLabel, statusBadgeClass, statusLabel, waitClass, waitLabel } from '../utils/helpers';
 
+function formatIndonesianDate(isoString) {
+  if (!isoString) return '—';
+  try {
+    const date = new Date(isoString);
+    // Cek apakah tanggal valid
+    if (isNaN(date.getTime())) return isoString; 
+    
+    // Format tanggal: "5 Agustus 2026, 12:46 WIB"
+    return new Intl.DateTimeFormat('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Jakarta',
+    }).format(date);
+  } catch (error) {
+    return isoString; // Fallback jika gagal format
+  }
+}
+
 export default function TicketDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -240,10 +261,6 @@ export default function TicketDetail() {
     <>
       <Topbar
         title={baseTicket.id}
-        description={
-          'Diteruskan dari bot Telegram — ' +
-          (isTerminalStatus(baseTicket.status) ? 'sudah selesai' : 'belum dibalas ' + waitLabel(baseTicket))
-        }
       />
       <div className="content">
         <span className="back-link" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
@@ -308,7 +325,7 @@ export default function TicketDetail() {
                 </div>
                 <div className="kv">
                   <span>Dibuat</span>
-                  <span>{baseTicket.createdAt || baseTicket.created_at || '—'}</span>
+                  <span>{formatIndonesianDate(baseTicket.createdAt || baseTicket.created_at)}</span>
                 </div>
                 <div className="kv">
                   <span>Waktu tunggu</span>
@@ -325,10 +342,6 @@ export default function TicketDetail() {
                   >
                     {waitLabel(baseTicket)}
                   </span>
-                </div>
-                <div className="kv">
-                  <span>Sumber</span>
-                  <span>{baseTicket.source || 'Bot Telegram'}</span>
                 </div>
               </div>
             </div>
