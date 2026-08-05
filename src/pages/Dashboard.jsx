@@ -38,14 +38,6 @@ export default function Dashboard() {
   } = useTickets();
   const [currentPage, setCurrentPage] = useState(1);
 
-  if (loading) {
-    return (
-      <>
-        <Topbar title="Antrean Tiket" description="Diurutkan dari tiket terbaru — klik header kolom untuk mengurutkan ulang." />
-        <DashboardSkeleton />
-      </>
-    );
-  }
 
   const picOptions = useMemo(() => {
     const names = new Map();
@@ -94,6 +86,15 @@ export default function Dashboard() {
     setCurrentPage(Math.min(Math.max(page, 1), totalPages));
   }
 
+  if (loading) {
+    return (
+      <AppShell>
+        <Topbar title="Antrean Tiket" description="Diurutkan dari tiket terbaru — klik header kolom untuk mengurutkan ulang." />
+        <DashboardSkeleton />
+      </AppShell>
+    );
+  }
+  
   return (
     <>
       <Topbar title="Antrean Tiket" description="Diurutkan dari tiket terbaru — klik header kolom untuk mengurutkan ulang.">

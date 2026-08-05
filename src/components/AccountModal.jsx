@@ -6,10 +6,12 @@ const EMPTY = { name: '', username: '', role: 'helpdesk', password: '' };
 export default function AccountModal({ open, editingAccount, onClose, onSave }) {
   const [form, setForm] = useState(EMPTY);
   const [showPass, setShowPass] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (open) {
       setShowPass(false);
+      setIsSaving(false);
       setForm(
         editingAccount
           ? { name: editingAccount.name, username: editingAccount.username, role: editingAccount.role, password: '' }
@@ -23,7 +25,14 @@ export default function AccountModal({ open, editingAccount, onClose, onSave }) 
   }
 
   async function handleSave() {
-    const ok = await onSave(editingAccount ? editingAccount.id : null, form);
+    setIsSaving(true);
+    try{
+      const ok = await onSave(editingAccount ? editingAccount.id : null, form);
+      if (ok) onClose();
+    } finally {
+      setIsSaving(false);
+    }
+    
     if (ok) onClose();
   }
 
@@ -92,8 +101,8 @@ export default function AccountModal({ open, editingAccount, onClose, onSave }) 
         <button className="btn-ghost" onClick={onClose}>
           Batal
         </button>
-        <button className="btn-send" onClick={handleSave}>
-          Simpan Akun
+        <button className="btn-send" onClick={handleSave} disabled={isSaving}>
+          {isSaving ? 'Menyimpan akun...' : 'Simpan Akun'}
         </button>
       </div>
     </Modal>

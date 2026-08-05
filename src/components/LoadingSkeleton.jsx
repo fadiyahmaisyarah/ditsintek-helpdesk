@@ -3,15 +3,43 @@ import 'react-loading-skeleton/dist/skeleton.css';
 
 function BaseSkeleton({ children }) {
   return (
-    <SkeletonTheme baseColor="#e6ebe4" highlightColor="#f7f9f6">
+    <SkeletonTheme baseColor="#dfe6dc" highlightColor="#f7faf6">
       {children}
     </SkeletonTheme>
   );
 }
 
-export function DashboardSkeleton() {
+function LoadingFrame({ title, subtitle, children }) {
   return (
     <BaseSkeleton>
+      <div
+        style={{
+          minHeight: 'calc(100vh - 72px)',
+          padding: '24px 26px 60px',
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0))',
+        }}
+      >
+        <div style={{ marginBottom: 18 }}>
+          <Skeleton height={18} width="24%" />
+          <div style={{ marginTop: 8 }}>
+            <Skeleton height={13} width="42%" />
+          </div>
+          {title ? (
+            <div style={{ marginTop: 12, fontSize: 12, color: 'var(--ink-faint)' }}>
+              {title}
+              {subtitle ? ` — ${subtitle}` : ''}
+            </div>
+          ) : null}
+        </div>
+        {children}
+      </div>
+    </BaseSkeleton>
+  );
+}
+
+export function DashboardSkeleton() {
+  return (
+    <LoadingFrame title="Memuat antrean tiket" subtitle="Data sedang disinkronkan dari server">
       <div className="content">
         <div className="stat-grid">
           {Array.from({ length: 4 }).map((_, index) => (
@@ -34,13 +62,13 @@ export function DashboardSkeleton() {
           </div>
         </div>
       </div>
-    </BaseSkeleton>
+    </LoadingFrame>
   );
 }
 
 export function TableSkeleton({ rows = 8, columns = 4 }) {
   return (
-    <BaseSkeleton>
+    <LoadingFrame title="Memuat daftar data" subtitle="Menunggu respons server">
       <div className="panel" style={{ overflow: 'hidden' }}>
         <div style={{ padding: '16px 18px', borderBottom: '1px solid var(--border-soft)' }}>
           <Skeleton height={18} width="24%" />
@@ -65,13 +93,13 @@ export function TableSkeleton({ rows = 8, columns = 4 }) {
           ))}
         </div>
       </div>
-    </BaseSkeleton>
+    </LoadingFrame>
   );
 }
 
 export function TicketDetailSkeleton() {
   return (
-    <BaseSkeleton>
+    <LoadingFrame title="Memuat detail tiket" subtitle="Riwayat dan catatan sedang diambil">
       <div className="content">
         <Skeleton height={14} width="14%" />
         <div className="detail-grid" style={{ marginTop: 12 }}>
@@ -125,6 +153,6 @@ export function TicketDetailSkeleton() {
           </div>
         </div>
       </div>
-    </BaseSkeleton>
+    </LoadingFrame>
   );
 }

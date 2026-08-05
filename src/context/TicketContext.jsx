@@ -13,6 +13,8 @@ import { normalizeRoleKey, normalizeTicketStatus, isTerminalStatus } from '../ut
 
 const TicketContext = createContext(null);
 
+const REFRESH_INTERVAL_MS = 60000;
+
 export function TicketProvider({ children }) {
   const toast = useToast();
   const { user } = useAuth();
@@ -27,10 +29,30 @@ export function TicketProvider({ children }) {
   const [sortDir, setSortDir] = useState('desc');
 
   useEffect(() => {
-    getTickets().then((data) => {
-      setTickets(data);
-      setLoading(false);
-    });
+    let active = true;
+
+    async function loadTickets(silent = false) {
+      if (!silent) setLoading(true);
+
+      try {
+        const data = await getTickets();
+        if (!active) return;
+        setTickets(data);
+      } finally {
+        if (active && !silent) setLoading(false);
+      }
+    }
+
+    loadTickets();
+
+    const timer = setInterval(() => {
+      loadTickets(true);
+    }, REFRESH_INTERVAL_MS);
+
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
   }, []);
 
   function setSort(key) {

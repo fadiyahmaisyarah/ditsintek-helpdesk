@@ -354,39 +354,44 @@ export default function TicketDetail() {
                 <option value="open">Open</option>
                 <option value="progress">In Progress</option>
                 <option value="resolved">Resolved</option>
-                <option value="closed">Closed</option>
               </select>
             </div>
 
-            {isAdmin && (
-              <div className="side-card">
-                <h4>ASSIGN PIC</h4>
-                <div className="kv" style={{ marginBottom: '10px' }}>
-                  <span>PIC saat ini</span>
-                  <span>{resolvedAssigneeName || 'Belum di-assign'}</span>
-                </div>
-                <select
-                  className="status-select"
-                  value={selectedAssignee}
-                  onChange={(e) => setSelectedAssignee(e.target.value)}
-                >
-                  <option value="">Pilih PIC</option>
-                  {assignableUsers.map((account) => (
-                    <option key={account.id} value={account.id}>
-                      {account.name} · {account.role}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  className="btn-outline"
-                  onClick={handleAssignPic}
-                  disabled={!selectedAssignee}
-                  style={{ marginTop: '10px', width: '100%' }}
-                >
-                  Simpan PIC
-                </button>
+            <div className="side-card">
+              <h4>Penanggung Jawab (PIC) Tiket</h4>
+              <div style={{ marginBottom: isAdmin ? '12px' : '0' }}>
+                <span style={{ display: 'block', fontSize: '12px', color: 'var(--ink-soft)', marginBottom: '4px' }}>
+                  PIC saat ini
+                </span>
+                <strong style={{ display: 'block', fontSize: '13px', color: 'var(--ink)' }}>
+                  {resolvedAssigneeName || 'Belum di-assign'}
+                </strong>
               </div>
-            )}
+              {isAdmin && (
+                <>
+                  <select
+                    className="status-select"
+                    value={selectedAssignee}
+                    onChange={(e) => setSelectedAssignee(e.target.value)}
+                  >
+                    <option value="">Pilih PIC</option>
+                    {assignableUsers.map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.name} · {account.role}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    className="btn-outline"
+                    onClick={handleAssignPic}
+                    disabled={!selectedAssignee}
+                    style={{ marginTop: '10px', width: '100%' }}
+                  >
+                    Simpan PIC
+                  </button>
+                </>
+              )}
+            </div>
 
             <div className="side-card">
               <h4>CATATAN INTERNAL</h4>

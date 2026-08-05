@@ -9,6 +9,8 @@ import { useToast } from './ToastContext';
 
 const FaqContext = createContext(null);
 
+const REFRESH_INTERVAL_MS = 60000;
+
 function getErrorMessage(error, fallback) {
   return error?.response?.data?.message || fallback;
 }
@@ -21,16 +23,32 @@ export function FaqProvider({ children }) {
 
   // Mengambil data FAQ dari database backend saat pertama kali dibuka
   useEffect(() => {
-    getFaqs()
-      .then((data) => {
+    let active = true;
+
+    async function loadFaqs(silent = false) {
+      if (!silent) setLoading(true);
+
+      try {
+        const data = await getFaqs();
+        if (!active) return;
         // Mendukung berbagai format struktur data dari API backend
         const list = Array.isArray(data) ? data : data?.data || [];
         setFaqs(list);
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
+      } finally {
+        if (active && !silent) setLoading(false);
+      }
+    }
+
+    loadFaqs();
+
+    const timer = setInterval(() => {
+      loadFaqs(true);
+    }, REFRESH_INTERVAL_MS);
+
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
   }, []);
 
   // Logika pencarian real-time persis seperti halaman Antrean Tiket

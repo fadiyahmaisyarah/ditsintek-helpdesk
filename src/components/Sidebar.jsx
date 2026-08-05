@@ -7,7 +7,7 @@ import { accRoleLabel } from '../utils/helpers';
 export default function Sidebar({ isOpen, onClose }) {
   const { user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
-  const [resolvedName, setResolvedName] = useState('User');
+  const [resolvedName, setResolvedName] = useState('Loading...');
 
   function handleLogout() {
     logout();

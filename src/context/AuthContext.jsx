@@ -1,14 +1,16 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useEffect, useContext, useState } from 'react';
 import * as authService from '../services/authService';
+import { getAccounts } from '../services/accountService';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('user');
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+  const [user, setUser] = useState(null);
   const [loggingIn, setLoggingIn] = useState(false);
+
+  useEffect(() => {
+    localStorage.removeItem('user');
+  }, []);
 
   const isAuthenticated = !!user;
 
@@ -20,22 +22,45 @@ export function AuthProvider({ children }) {
     try {
       const response = await authService.login(username, password);
       const responseUser = response?.data?.user || response?.data?.data || response?.data || {};
-      
-      // Deteksi otomatis: Jika username mengandung kata 'admin', tetapkan role sebagai 'admin'
-      const assignedRole = username.toLowerCase().includes('admin') ? 'admin' : defaultRole;
+
+      const normalizedUsername = String(username || '').toLowerCase().trim();
+      let resolvedRole = String(responseUser.role || responseUser.user_role || '').toLowerCase().trim();
+
+      if (!resolvedRole) {
+        try {
+          const accounts = await getAccounts();
+          const matchedAccount = accounts.find((account) => {
+            const accountUsername = String(account?.username || account?.email || '').toLowerCase().trim();
+            const accountName = String(account?.name || '').toLowerCase().trim();
+            return normalizedUsername && (accountUsername === normalizedUsername || accountName === normalizedUsername);
+          });
+
+          resolvedRole = String(matchedAccount?.role || '').toLowerCase().trim();
+        } catch (error) {
+          resolvedRole = '';
+        }
+      }
+
+      if (!resolvedRole) {
+        resolvedRole = normalizedUsername.includes('admin') ? 'admin' : defaultRole;
+      }
+
+      if (normalizedUsername.includes('admin')) {
+        resolvedRole = 'admin';
+      }
 
       const userData = {
         id_user: responseUser.id_user || responseUser.id || responseUser.user_id || null,
         username: username,
         name: username,
-        role: assignedRole, // Otomatis jadi 'admin' jika username-nya ada kata admin
         accessToken: response?.data?.accessToken,
         refreshToken: response?.data?.refreshToken,
         ...responseUser,
+        role: resolvedRole,
       };
 
       setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.removeItem('user');
 
       return userData;
     } catch (error) {
@@ -48,7 +73,6 @@ export function AuthProvider({ children }) {
   const logout = () => {
     authService.logout();
     setUser(null);
-    localStorage.removeItem('user');
   };
 
   return (
