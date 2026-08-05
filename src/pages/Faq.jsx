@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import AppShell from '../components/AppShell';
 import Topbar from '../components/Topbar';
 import FaqTable from '../components/FaqTable';
 import FaqModal from '../components/FaqModal';
@@ -60,7 +59,7 @@ export default function Faq() {
   }
 
   return (
-    <AppShell>
+    <>
       <Topbar
         title="Kelola FAQ"
         description="Ini yang dibaca bot sebelum meneruskan ke manusia — makin lengkap, makin sedikit tiket yang masuk."
@@ -167,6 +166,6 @@ export default function Faq() {
         onClose={() => setModalOpen(false)}
         onSave={saveFaq}
       />
-    </AppShell>
+    </>
   );
 }

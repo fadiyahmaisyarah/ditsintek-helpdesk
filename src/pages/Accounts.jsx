@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import AppShell from '../components/AppShell';
 import Topbar from '../components/Topbar';
 import AccountTable from '../components/AccountTable';
 import AccountModal from '../components/AccountModal';
@@ -13,7 +12,6 @@ export default function Accounts() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
-  // Pengecekan aman: izinkan jika isAdmin true atau username mengandung kata 'admin'
   const isUserAdmin = isAdmin || (user && user.username && user.username.toLowerCase().includes('admin'));
 
   const editingAccount = editingId ? accounts.find((a) => a.id === editingId) : null;
@@ -29,7 +27,7 @@ export default function Accounts() {
   }
 
   return (
-    <AppShell>
+    <>
       <Topbar
         title="Manajemen Akun"
         description="Khusus Admin — atur siapa saja yang bisa masuk ke dashboard helpdesk."
@@ -68,6 +66,6 @@ export default function Accounts() {
         onClose={() => setModalOpen(false)}
         onSave={saveAccount}
       />
-    </AppShell>
+    </>
   );
 }

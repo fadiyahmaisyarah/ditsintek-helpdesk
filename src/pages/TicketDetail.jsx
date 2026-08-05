@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import AppShell from '../components/AppShell';
 import Topbar from '../components/Topbar';
 import { TicketDetailSkeleton } from '../components/LoadingSkeleton';
 import { useAuth } from '../context/AuthContext';
@@ -17,17 +16,15 @@ export default function TicketDetail() {
   
   const [replyText, setReplyText] = useState('');
   const [noteText, setNoteText] = useState('');
-  const [toastMessage, setToastMessage] = useState('');
   const [assignableUsers, setAssignableUsers] = useState([]);
   const [selectedAssignee, setSelectedAssignee] = useState('');
   
-  // State untuk memaksa komponen me-render ulang setiap 1 menit agar waktu tunggu terhitung real-time terhadap jam sekarang
   const [, setTick] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setTick((t) => t + 1);
-    }, 60000); // Update setiap 1 menit
+    }, 60000); 
     return () => clearInterval(timer);
   }, []);
   
@@ -47,7 +44,6 @@ export default function TicketDetail() {
     return matchedUser?.name || '';
   }, [assignableUsers, baseTicket?.assigned_to]);
 
-  // REST API: Memuat riwayat chat lama saat pertama kali dibuka
   useEffect(() => {
     const fetchRiwayatChat = async () => {
       try {
@@ -72,7 +68,6 @@ export default function TicketDetail() {
     fetchRiwayatChat();
   }, [id]);
 
-  // SOCKET.IO: Mendengarkan pesan baru secara real-time
   useEffect(() => {
     const socket = io('https://helpdesk-ditsintek-backend-production.up.railway.app');
 
@@ -173,19 +168,19 @@ export default function TicketDetail() {
 
   if (loading) {
     return (
-      <AppShell>
+      <>
         <Topbar title="Tiket" description="—" />
         <TicketDetailSkeleton />
-      </AppShell>
+      </>
     );
   }
 
   if (!baseTicket) {
     return (
-      <AppShell>
+      <>
         <Topbar title="Tiket" description="—" />
         <div className="content">Tiket tidak ditemukan.</div>
-      </AppShell>
+      </>
     );
   }
 
@@ -242,7 +237,7 @@ export default function TicketDetail() {
   }
 
   return (
-    <AppShell>
+    <>
       <Topbar
         title={baseTicket.id}
         description={
@@ -425,6 +420,6 @@ export default function TicketDetail() {
           </div>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }
