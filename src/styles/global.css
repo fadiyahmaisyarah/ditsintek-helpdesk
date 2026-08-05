@@ -246,3 +246,89 @@ select.status-select{width:100%;padding:9px 10px;border-radius:8px;border:1px so
 .toast{background:var(--green-deep);color:#eef4ee;padding:11px 16px;border-radius:8px;font-size:12.5px;box-shadow:var(--shadow);display:flex;align-items:center;gap:8px;animation:toastin .2s ease;}
 .toast svg{width:15px;height:15px;color:var(--green-bright);flex-shrink:0;}
 @keyframes toastin{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+/* ---- RESPONSIVE MOBILE & HALF-SCREEN STYLES (TAMBAHAN BARU) ---- */
+.mobile-header {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 25;
+}
+
+.hamburger-btn, .close-sidebar-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.hamburger-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.mobile-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.close-sidebar-btn {
+  display: none;
+  color: #fff;
+  margin-left: auto;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 45;
+}
+
+/* Mengatur tata letak otomatis saat layar kecil / setengah layar / HP */
+@media (max-width: 768px) {
+  .mobile-header {
+    display: flex;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -260px;
+    bottom: 0;
+    width: 240px;
+    z-index: 50;
+    transition: left 0.3s ease;
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .close-sidebar-btn {
+    display: flex;
+  }
+
+  .sidebar-overlay.open {
+    display: block;
+  }
+
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}

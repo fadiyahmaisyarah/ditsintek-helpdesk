@@ -6,6 +6,7 @@ import { FaqProvider } from './context/FaqContext';
 import { AccountProvider } from './context/AccountContext';
 import ToastContainer from './components/ToastContainer';
 import ProtectedRoute from './components/ProtectedRoute';
+import AppShell from './components/AppShell'; // <-- 1. Tambahkan import AppShell
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import TicketDetail from './pages/TicketDetail';
@@ -22,11 +23,15 @@ export default function App() {
               <BrowserRouter>
                 <Routes>
                   <Route path="/login" element={<Login />} />
+                  
+                  {/* 2. Bungkus halaman-halaman di bawah dengan <AppShell> */}
                   <Route
                     path="/dashboard"
                     element={
                       <ProtectedRoute>
-                        <Dashboard />
+                        <AppShell>
+                          <Dashboard />
+                        </AppShell>
                       </ProtectedRoute>
                     }
                   />
@@ -34,7 +39,9 @@ export default function App() {
                     path="/tickets/:id"
                     element={
                       <ProtectedRoute>
-                        <TicketDetail />
+                        <AppShell>
+                          <TicketDetail />
+                        </AppShell>
                       </ProtectedRoute>
                     }
                   />
@@ -42,7 +49,9 @@ export default function App() {
                     path="/faq"
                     element={
                       <ProtectedRoute>
-                        <Faq />
+                        <AppShell>
+                          <Faq />
+                        </AppShell>
                       </ProtectedRoute>
                     }
                   />
@@ -50,10 +59,13 @@ export default function App() {
                     path="/accounts"
                     element={
                       <ProtectedRoute>
-                        <Accounts />
+                        <AppShell>
+                          <Accounts />
+                        </AppShell>
                       </ProtectedRoute>
                     }
                   />
+                  
                   <Route path="/" element={<Navigate to="/login" replace />} />
                   <Route path="*" element={<Navigate to="/login" replace />} />
                 </Routes>

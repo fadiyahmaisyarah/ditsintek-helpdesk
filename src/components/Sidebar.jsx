@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { getAccounts } from '../services/accountService';
 import { accRoleLabel } from '../utils/helpers';
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }) {
   const { user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
   const [resolvedName, setResolvedName] = useState('User');
@@ -62,14 +62,20 @@ export default function Sidebar() {
     .toUpperCase();
 
   return (
-    <div className="sidebar">
+    <div className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="brand">
         <div className="mark">DS</div>
         <span>DITSINTEK Helpdesk</span>
+        {/* Tombol close khusus tampilan mobile */}
+        <button className="close-sidebar-btn" onClick={onClose}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
       <div className="nav-label">Ticketing</div>
-      <NavLink to="/dashboard" className={({ isActive }) => `nav-item${isActive ? ' on' : ''}`}>
+      <NavLink to="/dashboard" onClick={onClose} className={({ isActive }) => `nav-item${isActive ? ' on' : ''}`}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
           <rect x="3" y="4" width="18" height="16" rx="2" />
           <path d="M3 9h18M8 4v5" />
@@ -79,7 +85,7 @@ export default function Sidebar() {
 
       <div className="nav-divider" />
       <div className="nav-label">Konteks Bot</div>
-      <NavLink to="/faq" className={({ isActive }) => `nav-item${isActive ? ' on' : ''}`}>
+      <NavLink to="/faq" onClick={onClose} className={({ isActive }) => `nav-item${isActive ? ' on' : ''}`}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
           <circle cx="12" cy="12" r="9" />
           <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.7-2.5 2-2.5 4" />
@@ -92,7 +98,7 @@ export default function Sidebar() {
         <>
           <div className="nav-divider" />
           <div className="nav-label">Akun</div>
-          <NavLink to="/accounts" className={({ isActive }) => `nav-item${isActive ? ' on' : ''}`}>
+          <NavLink to="/accounts" onClick={onClose} className={({ isActive }) => `nav-item${isActive ? ' on' : ''}`}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
               <circle cx="9" cy="8" r="3.2" />
               <path d="M2.5 19c1.2-3.6 4-5.2 6.5-5.2s5.3 1.6 6.5 5.2" />
@@ -104,7 +110,7 @@ export default function Sidebar() {
         </>
       )}
 
-      <div className="nav-item" style={{ marginTop: 'auto' }} onClick={handleLogout}>
+      <div className="nav-item" style={{ marginTop: 'auto' }} onClick={() => { handleLogout(); onClose(); }}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
           <path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3" />
           <path d="M15 16l4-4-4-4" />
