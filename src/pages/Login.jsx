@@ -22,7 +22,11 @@ export default function Login() {
       .slice(0, 3);
   }, [tickets]);
 
-  async function handleLogin() {
+  async function handleLogin(e) {
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault(); // Mencegah reload halaman saat tombol Enter ditekan
+    }
+
     const nextErrors = { username: !username.trim(), pass: !password.trim() };
     setErrors(nextErrors);
     if (nextErrors.username || nextErrors.pass) return;
@@ -86,29 +90,35 @@ export default function Login() {
             Silakan masukkan akun Anda untuk melanjutkan.
           </p>
           
-          <div className={`field${errors.username ? ' error' : ''}`}>
-            <label>Username</label>
-            <input
-              type="text"
-              placeholder="Masukkan username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-            <div className="err-msg">Masukkan username kamu.</div>
-          </div>
-          <div className={`field${errors.pass ? ' error' : ''}`}>
-            <label>Kata sandi</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <div className="err-msg">Kata sandi tidak boleh kosong.</div>
-          </div>
-          <button className="btn-primary" disabled={loggingIn} onClick={handleLogin}>
-            {loggingIn ? 'Memeriksa...' : 'Masuk'}
-          </button>
+          {/* Bungkus dengan tag form agar tombol Enter berfungsi */}
+          <form onSubmit={handleLogin}>
+            <div className={`field${errors.username ? ' error' : ''}`}>
+              <label>Username</label>
+              <input
+                type="text"
+                placeholder="Masukkan username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+              <div className="err-msg">Masukkan username kamu.</div>
+            </div>
+            
+            <div className={`field${errors.pass ? ' error' : ''}`}>
+              <label>Kata sandi</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <div className="err-msg">Kata sandi tidak boleh kosong.</div>
+            </div>
+
+            <button type="submit" className="btn-primary" disabled={loggingIn}>
+              {loggingIn ? 'Memeriksa...' : 'Masuk'}
+            </button>
+          </form>
+
           <div className="login-foot">Lupa kata sandi? Hubungi admin sistem DITSINTEK.</div>
         </div>
       </div>
