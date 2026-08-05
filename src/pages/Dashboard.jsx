@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import AppShell from '../components/AppShell';
 import Topbar from '../components/Topbar';
 import StatCard from '../components/StatCard';
 import TicketTable from '../components/TicketTable';
@@ -41,10 +40,10 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <AppShell>
+      <>
         <Topbar title="Antrean Tiket" description="Diurutkan dari tiket terbaru — klik header kolom untuk mengurutkan ulang." />
         <DashboardSkeleton />
-      </AppShell>
+      </>
     );
   }
 
@@ -96,7 +95,7 @@ export default function Dashboard() {
   }
 
   return (
-    <AppShell>
+    <>
       <Topbar title="Antrean Tiket" description="Diurutkan dari tiket terbaru — klik header kolom untuk mengurutkan ulang.">
         <div className="search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -196,6 +195,6 @@ export default function Dashboard() {
           )}
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }
