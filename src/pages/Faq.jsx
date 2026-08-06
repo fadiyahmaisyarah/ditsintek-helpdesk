@@ -64,8 +64,7 @@ export default function Faq() {
         title="Kelola FAQ"
         description="Ini yang dibaca bot sebelum meneruskan ke manusia — makin lengkap, makin sedikit tiket yang masuk."
       >
-        {/* PENYESUAIAN RESPONSIF: Bungkus search bar agar menyesuaikan ukuran layar */}
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '100%', maxWidth: '260px' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '220px', flexShrink: 0 }}>
           <svg 
             width="15" 
             height="15" 
@@ -80,7 +79,7 @@ export default function Faq() {
           </svg>
           <input
             type="text"
-            placeholder="Cari FAQ (pertanyaan/jawaban)..."
+            placeholder="Cari FAQ..."
             value={faqFilter}
             onChange={handleSearchChange}
             style={{
