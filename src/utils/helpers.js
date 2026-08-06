@@ -2,14 +2,13 @@ export function normalizeTicketStatus(status) {
   const normalized = String(status || '').toLowerCase().trim();
   if (['open', 'new', 'baru'].includes(normalized)) return 'open';
   if (['in_progress', 'progress', 'diproses', 'processing'].includes(normalized)) return 'progress';
-  if (['resolved', 'done', 'selesai', 'complete'].includes(normalized)) return 'resolved';
-  if (['closed', 'close'].includes(normalized)) return 'closed';
+  if (['resolved', 'done', 'selesai', 'complete', 'closed', 'close'].includes(normalized)) return 'resolved';
   return 'open';
 }
 
 export function isTerminalStatus(status) {
   const normalized = normalizeTicketStatus(status);
-  return normalized === 'resolved' || normalized === 'closed';
+  return normalized === 'resolved';
 }
 
 export function waitLabel(t) {
@@ -63,7 +62,6 @@ export function statusLabel(s) {
   if (normalized === 'open') return 'Open';
   if (normalized === 'progress') return 'In Progress';
   if (normalized === 'resolved') return 'Resolved';
-  if (normalized === 'closed') return 'Closed';
   return 'Open';
 }
 
@@ -72,7 +70,6 @@ export function statusBadgeClass(s) {
   if (normalized === 'open') return 'new';
   if (normalized === 'progress') return 'progress';
   if (normalized === 'resolved') return 'resolved';
-  if (normalized === 'closed') return 'closed';
   return 'new';
 }
 
@@ -80,7 +77,10 @@ export function normalizeRoleKey(r) {
   if (!r) return 'mhs';
 
   const normalized = String(r).toLowerCase().trim();
-  if (['tendik', 'tenaga', 'staff', 'dosen', 'pegawai', 'teacher'].some((value) => normalized.includes(value))) {
+  if (['dosen', 'staff', 'pegawai', 'teacher'].some((value) => normalized.includes(value))) {
+    return 'dosen';
+  }
+  if (['tendik', 'tenaga'].some((value) => normalized.includes(value))) {
     return 'tendik';
   }
   if (['mhs', 'mahasiswa', 'student', 'pelajar'].some((value) => normalized.includes(value))) {
@@ -91,7 +91,8 @@ export function normalizeRoleKey(r) {
 
 export function roleLabel(r) {
   const normalized = normalizeRoleKey(r);
-  if (normalized === 'tendik') return 'Tenaga Didik';
+  if (normalized === 'tendik') return 'Tendik';
+  if (normalized === 'dosen') return 'Dosen';
   if (normalized === 'admin') return 'Admin';
   return 'Mahasiswa';
 }
