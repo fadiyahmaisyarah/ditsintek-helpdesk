@@ -25,7 +25,6 @@ export default function TicketTable({ tickets: ticketsProp }) {
   const navigate = useNavigate();
   const ticketsToRender = ticketsProp ?? filteredSortedTickets;
 
-  // Konversi string t.role ke 'tendik' atau 'mhs' agar CSS lama kamu langsung nyangkut
   const getRoleClass = (role) => {
     if (!role) return 'mhs';
     const r = String(role).toLowerCase();
@@ -36,58 +35,59 @@ export default function TicketTable({ tickets: ticketsProp }) {
   };
 
   return (
-    <table>
-      <thead>
-        <tr>
-          <SortHeader label="ID Tiket" active={sortKey === 'id'} dir={sortDir} onClick={() => setSort('id')} width={96} />
-          <SortHeader label="Pengirim" active={sortKey === 'name'} dir={sortDir} onClick={() => setSort('name')} />
-          <SortHeader label="Status" active={sortKey === 'status'} dir={sortDir} onClick={() => setSort('status')} width={120} />
-          <th style={{ width: 170 }}>PIC</th>
-          <SortHeader label="Waktu Diajukan" active={sortKey === 'created_at'} dir={sortDir} onClick={() => setSort('created_at')} width={180} />
-          <SortHeader label="Waktu Tunggu" active={sortKey === 'wait'} dir={sortDir} onClick={() => setSort('wait')} width={140} />
-          <th style={{ width: 36 }} />
-        </tr>
-      </thead>
-      <tbody>
-        {ticketsToRender.length === 0 ? (
-          <tr className="empty-row">
-            <td colSpan={7}>Tidak ada tiket yang cocok dengan filter ini.</td>
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[900px]">
+        <thead>
+          <tr>
+            <SortHeader label="ID Tiket" active={sortKey === 'id'} dir={sortDir} onClick={() => setSort('id')} width={96} />
+            <SortHeader label="Pengirim" active={sortKey === 'name'} dir={sortDir} onClick={() => setSort('name')} />
+            <SortHeader label="Status" active={sortKey === 'status'} dir={sortDir} onClick={() => setSort('status')} width={120} />
+            <th style={{ width: 170 }}>PIC</th>
+            <SortHeader label="Waktu Diajukan" active={sortKey === 'created_at'} dir={sortDir} onClick={() => setSort('created_at')} width={180} />
+            <SortHeader label="Waktu Tunggu" active={sortKey === 'wait'} dir={sortDir} onClick={() => setSort('wait')} width={140} />
+            <th style={{ width: 36 }} />
           </tr>
-        ) : (
-          ticketsToRender.map((t) => (
-            <tr className="row-link" key={t.id} onClick={() => navigate(`/tickets/${t.id}`)}>
-              <td className="id-cell id-cell-tight">{t.id}</td>
-              <td className="who-cell">
-                <b>{t.name}</b>
-                {/* Pakai getRoleClass(t.role) agar class 'mhs' atau 'tendik' selalu terpanggil */}
-                <span className={`role-tag ${getRoleClass(t.role)}`}>
-                  {roleLabel(t.role)}
-                </span>
-              </td>
-              <td>
-                <span className={`status-pill ${statusBadgeClass(t.status)}`}>{statusLabel(t.status)}</span>
-              </td>
-              <td className="pic-cell">{t.assigned_to_name || t.pic || '—'}</td>
-              <td className="time-cell">{formatDateTime(t.created_at)}</td>
-              <td className="time-cell">{formatRelativeDuration(t.updated_at)}</td>
-              <td>
-                <div
-                  className="detail-arrow"
-                  title="Lihat detail tiket"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/tickets/${t.id}`);
-                  }}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M9 6l6 6-6 6" />
-                  </svg>
-                </div>
-              </td>
+        </thead>
+        <tbody>
+          {ticketsToRender.length === 0 ? (
+            <tr className="empty-row">
+              <td colSpan={7}>Tidak ada tiket yang cocok dengan filter ini.</td>
             </tr>
-          ))
-        )}
-      </tbody>
-    </table>
+          ) : (
+            ticketsToRender.map((t) => (
+              <tr className="row-link" key={t.id} onClick={() => navigate(`/tickets/${t.id}`)}>
+                <td className="id-cell id-cell-tight">{t.id}</td>
+                <td className="who-cell">
+                  <b>{t.name}</b>
+                  <span className={`role-tag ${getRoleClass(t.role)}`}>
+                    {roleLabel(t.role)}
+                  </span>
+                </td>
+                <td>
+                  <span className={`status-pill ${statusBadgeClass(t.status)}`}>{statusLabel(t.status)}</span>
+                </td>
+                <td className="pic-cell">{t.assigned_to_name || t.pic || '—'}</td>
+                <td className="time-cell">{formatDateTime(t.created_at)}</td>
+                <td className="time-cell">{formatRelativeDuration(t.updated_at)}</td>
+                <td>
+                  <div
+                    className="detail-arrow"
+                    title="Lihat detail tiket"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/tickets/${t.id}`);
+                    }}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 6l6 6-6 6" />
+                    </svg>
+                  </div>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 }
