@@ -35,8 +35,8 @@ export default function TicketTable({ tickets: ticketsProp }) {
   };
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[900px]">
+    <div style={{ width: '100%', overflowX: 'auto', background: '#fff', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+      <table style={{ width: '100%', minWidth: '900px', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
             <SortHeader label="ID Tiket" active={sortKey === 'id'} dir={sortDir} onClick={() => setSort('id')} width={96} />
@@ -51,11 +51,11 @@ export default function TicketTable({ tickets: ticketsProp }) {
         <tbody>
           {ticketsToRender.length === 0 ? (
             <tr className="empty-row">
-              <td colSpan={7}>Tidak ada tiket yang cocok dengan filter ini.</td>
+              <td colSpan={7} style={{ textAlign: 'center', padding: '20px' }}>Tidak ada tiket yang cocok dengan filter ini.</td>
             </tr>
           ) : (
             ticketsToRender.map((t) => (
-              <tr className="row-link" key={t.id} onClick={() => navigate(`/tickets/${t.id}`)}>
+              <tr className="row-link" key={t.id} onClick={() => navigate(`/tickets/${t.id}`)} style={{ cursor: 'pointer' }}>
                 <td className="id-cell id-cell-tight">{t.id}</td>
                 <td className="who-cell">
                   <b>{t.name}</b>
@@ -78,7 +78,7 @@ export default function TicketTable({ tickets: ticketsProp }) {
                       navigate(`/tickets/${t.id}`);
                     }}
                   >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 18, height: 18 }}>
                       <path d="M9 6l6 6-6 6" />
                     </svg>
                   </div>
