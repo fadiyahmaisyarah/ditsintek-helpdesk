@@ -12,10 +12,8 @@ function formatIndonesianDate(isoString) {
   if (!isoString) return '—';
   try {
     const date = new Date(isoString);
-    // Cek apakah tanggal valid
     if (isNaN(date.getTime())) return isoString; 
     
-    // Format tanggal: "5 Agustus 2026, 12:46 WIB"
     return new Intl.DateTimeFormat('id-ID', {
       day: 'numeric',
       month: 'long',
@@ -25,8 +23,16 @@ function formatIndonesianDate(isoString) {
       timeZone: 'Asia/Jakarta',
     }).format(date);
   } catch (error) {
-    return isoString; // Fallback jika gagal format
+    return isoString;
   }
+}
+
+// Helper untuk penyesuaian istilah role (Staff = Dosen, Tenaga Didik = Tendik)
+function customRoleLabel(role) {
+  const lower = String(role || '').toLowerCase();
+  if (lower === 'staff' || lower === 'dosen') return 'Dosen';
+  if (lower === 'tenaga didik' || lower === 'tendik') return 'Tendik';
+  return roleLabel(role) || role;
 }
 
 export default function TicketDetail() {
@@ -274,7 +280,7 @@ export default function TicketDetail() {
               <div>
                 <h2>{baseTicket.name}</h2>
                 <div className="meta">
-                  {roleLabel(baseTicket.role)} · via {baseTicket.source || 'Bot Telegram'}
+                  {customRoleLabel(baseTicket.role)} · via {baseTicket.source || 'Bot Telegram'}
                 </div>
               </div>
               <span className={`status-pill ${statusBadgeClass(localStatus)}`}>{statusLabel(localStatus)}</span>
@@ -315,13 +321,18 @@ export default function TicketDetail() {
             <div className="side-card">
               <h4>DETAIL TIKET</h4>
               <div>
+                {/* Tambahan NIM / NIP sesuai Poin 4 */}
+                <div className="kv">
+                  <span>NIM / NIP</span>
+                  <span><strong>{baseTicket.nim || baseTicket.nip || baseTicket.nim_nip || '—'}</strong></span>
+                </div>
                 <div className="kv">
                   <span>Kategori</span>
                   <span><strong>{baseTicket.kategori || baseTicket.category || 'Umum'}</strong></span>
                 </div>
                 <div className="kv">
                   <span>Peran</span>
-                  <span><strong>{roleLabel(baseTicket.role)}</strong></span>
+                  <span><strong>{customRoleLabel(baseTicket.role)}</strong></span>
                 </div>
                 <div className="kv">
                   <span>Dibuat</span>
@@ -390,7 +401,7 @@ export default function TicketDetail() {
                     <option value="">Pilih PIC</option>
                     {assignableUsers.map((account) => (
                       <option key={account.id} value={account.id}>
-                        {account.name} · {account.role}
+                        {account.name} · {customRoleLabel(account.role)}
                       </option>
                     ))}
                   </select>
