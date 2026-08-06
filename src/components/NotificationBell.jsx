@@ -42,7 +42,7 @@ export default function NotificationBell() {
           urgentTickets.map((t) => (
             <div className="nd-item" key={t.id} onClick={() => handleOpenTicket(t.id)}>
               <b>{t.name}</b>
-              {t.kategori} — <span>{waitLabel(t)}</span>
+              {t.nim || t.nip || t.nim_nip || '—'} — <span>{waitLabel(t)}</span>
             </div>
           ))
         ) : (
