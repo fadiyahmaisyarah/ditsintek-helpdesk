@@ -60,14 +60,42 @@ export default function Faq() {
 
   return (
     <>
-      {/* Menggunakan properti bawaan Topbar agar desain, ukuran, dan warnanya persis 100% seperti halaman Antrean Tiket */}
       <Topbar
         title="Kelola FAQ"
         description="Ini yang dibaca bot sebelum meneruskan ke manusia — makin lengkap, makin sedikit tiket yang masuk."
-        searchValue={faqFilter}
-        onSearchChange={handleSearchChange}
-        searchPlaceholder="Cari FAQ..."
-      />
+      >
+        {/* Search bar dikembalikan langsung di sini dengan warna dan desain identik seperti halaman antrean tiket */}
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '260px', flexShrink: 0 }}>
+          <svg 
+            width="15" 
+            height="15" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            style={{ position: 'absolute', left: '12px', color: '#6b7280', pointerEvents: 'none' }}
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            type="text"
+            placeholder="Cari FAQ..."
+            value={faqFilter}
+            onChange={handleSearchChange}
+            style={{
+              padding: '8px 12px 8px 36px',
+              borderRadius: '8px',
+              border: '1px solid #d1d5db',
+              fontSize: '13px',
+              outline: 'none',
+              width: '100%',
+              backgroundColor: '#f3f4f6',
+              color: '#374151'
+            }}
+          />
+        </div>
+      </Topbar>
 
       <div className="content">
         <div className="faq-toolbar" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
