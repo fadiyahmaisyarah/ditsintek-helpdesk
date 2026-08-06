@@ -64,7 +64,8 @@ export default function Faq() {
         title="Kelola FAQ"
         description="Ini yang dibaca bot sebelum meneruskan ke manusia — makin lengkap, makin sedikit tiket yang masuk."
       >
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+        {/* PENYESUAIAN RESPONSIF: Bungkus search bar agar menyesuaikan ukuran layar */}
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '100%', maxWidth: '260px' }}>
           <svg 
             width="15" 
             height="15" 
@@ -88,7 +89,7 @@ export default function Faq() {
               border: '1px solid transparent',
               fontSize: '13px',
               outline: 'none',
-              width: '260px',
+              width: '100%',
               backgroundColor: '#eef1ec',
               color: '#374151'
             }}
@@ -97,7 +98,7 @@ export default function Faq() {
       </Topbar>
 
       <div className="content">
-        <div className="faq-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <div className="faq-toolbar" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
           <div className="faq-count-text" style={{ fontSize: 12.5, color: 'var(--ink-soft)' }}>
             {filteredFaqs.length} FAQ terdaftar
           </div>
