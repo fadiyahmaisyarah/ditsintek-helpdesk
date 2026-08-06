@@ -321,14 +321,9 @@ export default function TicketDetail() {
             <div className="side-card">
               <h4>DETAIL TIKET</h4>
               <div>
-                {/* Tambahan NIM / NIP sesuai Poin 4 */}
                 <div className="kv">
                   <span>NIM / NIP</span>
                   <span><strong>{baseTicket.nim || baseTicket.nip || baseTicket.nim_nip || '—'}</strong></span>
-                </div>
-                <div className="kv">
-                  <span>Kategori</span>
-                  <span><strong>{baseTicket.kategori || baseTicket.category || 'Umum'}</strong></span>
                 </div>
                 <div className="kv">
                   <span>Peran</span>
