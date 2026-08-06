@@ -64,7 +64,8 @@ export default function Faq() {
         title="Kelola FAQ"
         description="Ini yang dibaca bot sebelum meneruskan ke manusia — makin lengkap, makin sedikit tiket yang masuk."
       >
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '260px', flexShrink: 0 }}>
+        {/* Desain dan warna diduplikat persis seperti search bar di halaman Antrean Tiket */}
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '280px', flexShrink: 0 }}>
           <svg 
             width="15" 
             height="15" 
@@ -72,7 +73,7 @@ export default function Faq() {
             fill="none" 
             stroke="currentColor" 
             strokeWidth="2" 
-            style={{ position: 'absolute', left: '12px', color: '#6b7280', pointerEvents: 'none' }}
+            style={{ position: 'absolute', left: '14px', color: '#6b7280', pointerEvents: 'none' }}
           >
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -83,13 +84,13 @@ export default function Faq() {
             value={faqFilter}
             onChange={handleSearchChange}
             style={{
-              padding: '8px 12px 8px 36px',
+              padding: '9px 14px 9px 38px',
               borderRadius: '8px',
-              border: '1px solid #d1d5db',
+              border: '1px solid #d5dad6',
               fontSize: '13px',
               outline: 'none',
               width: '100%',
-              backgroundColor: '#e5e7eb', // Disamakan persis dengan warna background kotak ikon lonceng notifikasi di sebelah kanannya
+              backgroundColor: '#eaf0ec', // Disamakan persis dengan warna background kotak notifikasi di sebelah kanannya
               color: '#374151'
             }}
           />
