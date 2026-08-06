@@ -9,7 +9,8 @@ import { normalizeTicketStatus } from '../utils/helpers';
 const ROLE_CHIPS = [
   ['all', 'Semua'],
   ['mhs', 'Mahasiswa'],
-  ['tendik', 'Tenaga Didik'],
+  ['tendik', 'Tendik'],
+  ['dosen', 'Dosen'],
 ];
 
 const STATUS_CHIPS = [
@@ -17,7 +18,6 @@ const STATUS_CHIPS = [
   ['open', 'Open'],
   ['progress', 'In Progress'],
   ['resolved', 'Resolved'],
-  ['closed', 'Closed'],
 ];
 
 const ITEMS_PER_PAGE = 10;
@@ -38,7 +38,6 @@ export default function Dashboard() {
   } = useTickets();
   const [currentPage, setCurrentPage] = useState(1);
 
-
   const picOptions = useMemo(() => {
     const names = new Map();
     tickets.forEach((ticket) => {
@@ -54,7 +53,6 @@ export default function Dashboard() {
   const openN = tickets.filter((t) => normalizeTicketStatus(t.status) === 'open').length;
   const inprogressN = tickets.filter((t) => normalizeTicketStatus(t.status) === 'progress').length;
   const resolvedN = tickets.filter((t) => normalizeTicketStatus(t.status) === 'resolved').length;
-  const closedN = tickets.filter((t) => normalizeTicketStatus(t.status) === 'closed').length;
   const totalPages = Math.max(1, Math.ceil(filteredSortedTickets.length / ITEMS_PER_PAGE));
 
   useEffect(() => {
@@ -110,11 +108,10 @@ export default function Dashboard() {
         </div>
       </Topbar>
       <div className="content">
-        <div className="stat-grid">
+        <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
           <StatCard n={openN} label="Open" variant="urgent" />
           <StatCard n={inprogressN} label="In Progress" variant="warn" />
           <StatCard n={resolvedN} label="Resolved" variant="good" />
-          <StatCard n={closedN} label="Closed" variant="info" />
         </div>
         <div className="panel">
           <div className="panel-head">
