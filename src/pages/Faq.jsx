@@ -64,7 +64,8 @@ export default function Faq() {
         title="Kelola FAQ"
         description="Ini yang dibaca bot sebelum meneruskan ke manusia — makin lengkap, makin sedikit tiket yang masuk."
       >
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '220px', flexShrink: 0 }}>
+        {/* Style search bar disamakan persis seperti halaman Antrean Tiket */}
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '260px', flexShrink: 0 }}>
           <svg 
             width="15" 
             height="15" 
@@ -79,17 +80,17 @@ export default function Faq() {
           </svg>
           <input
             type="text"
-            placeholder="Cari FAQ..."
+            placeholder="Cari FAQ (pertanyaan/jawaban)..."
             value={faqFilter}
             onChange={handleSearchChange}
             style={{
               padding: '8px 12px 8px 36px',
               borderRadius: '8px',
-              border: '1px solid transparent',
+              border: '1px solid #d1d5db',
               fontSize: '13px',
               outline: 'none',
               width: '100%',
-              backgroundColor: '#eef1ec',
+              backgroundColor: '#f3f4f6',
               color: '#374151'
             }}
           />
