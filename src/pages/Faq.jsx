@@ -64,35 +64,16 @@ export default function Faq() {
         title="Kelola FAQ"
         description="Ini yang dibaca bot sebelum meneruskan ke manusia — makin lengkap, makin sedikit tiket yang masuk."
       >
-        {/* Desain dan warna diduplikat persis seperti search bar di halaman Antrean Tiket */}
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '280px', flexShrink: 0 }}>
-          <svg 
-            width="15" 
-            height="15" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            style={{ position: 'absolute', left: '14px', color: '#6b7280', pointerEvents: 'none' }}
-          >
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        {/* Menggunakan struktur class="search" persis seperti di Dashboard.jsx agar warnanya 100% kembar */}
+        <div className="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-4.3-4.3" />
           </svg>
           <input
-            type="text"
             placeholder="Cari FAQ..."
             value={faqFilter}
             onChange={handleSearchChange}
-            style={{
-              padding: '9px 14px 9px 38px',
-              borderRadius: '8px',
-              border: '1px solid #d5dad6',
-              fontSize: '13px',
-              outline: 'none',
-              width: '100%',
-              backgroundColor: '#eaf0ec', // Disamakan persis dengan warna background kotak notifikasi di sebelah kanannya
-              color: '#374151'
-            }}
           />
         </div>
       </Topbar>
