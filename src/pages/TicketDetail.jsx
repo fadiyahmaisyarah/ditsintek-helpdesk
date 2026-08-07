@@ -444,11 +444,17 @@ export default function TicketDetail() {
                   </div>
                 )}
               </div>
-              <div className="add-note">
+             <div className="add-note">
                 <textarea
                   placeholder="Tambah catatan untuk tim internal..."
                   value={noteText}
                   onChange={(e) => setNoteText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleAddNote();
+                    }
+                  }}
                 />
                 <button className="btn-outline" onClick={handleAddNote} style={{ marginTop: '8px', width: '100%' }}>
                   Simpan Catatan
