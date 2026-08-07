@@ -53,7 +53,7 @@ npm run lint
 Project ini memakai backend API di:
 
 ```bash
-https://helpdesk-ditsintek-backend.vercel.app/api
+http://localhost:5000/api
 ```
 
 Konfigurasi contoh environment ada di [\.env.example](.env.example), tetapi saat ini `src/services/api.js` masih memakai base URL tersebut secara langsung.

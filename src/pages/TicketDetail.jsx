@@ -7,13 +7,14 @@ import { useAuth } from '../context/AuthContext';
 import { useTickets } from '../context/TicketContext';
 import { getAccounts } from '../services/accountService';
 import { isTerminalStatus, roleLabel, statusBadgeClass, statusLabel, waitClass, waitLabel } from '../utils/helpers';
+import api from '../services/api.js'
 
 function formatIndonesianDate(isoString) {
   if (!isoString) return '—';
   try {
     const date = new Date(isoString);
-    if (isNaN(date.getTime())) return isoString; 
-    
+    if (isNaN(date.getTime())) return isoString;
+
     return new Intl.DateTimeFormat('id-ID', {
       day: 'numeric',
       month: 'long',
@@ -40,21 +41,21 @@ export default function TicketDetail() {
   const navigate = useNavigate();
   const { tickets, loading, getTicket, getNotes, changeStatus, sendReply, addNote } = useTickets();
   const { user, isAdmin } = useAuth();
-  
+
   const [replyText, setReplyText] = useState('');
   const [noteText, setNoteText] = useState('');
   const [assignableUsers, setAssignableUsers] = useState([]);
   const [selectedAssignee, setSelectedAssignee] = useState('');
-  
+
   const [, setTick] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setTick((t) => t + 1);
-    }, 60000); 
+    }, 60000);
     return () => clearInterval(timer);
   }, []);
-  
+
   const threadRef = useRef(null);
 
   const baseTicket = getTicket(id) || tickets[0];
@@ -74,8 +75,8 @@ export default function TicketDetail() {
   useEffect(() => {
     const fetchRiwayatChat = async () => {
       try {
-        const response = await fetch(`https://helpdesk-ditsintek-backend-production.up.railway.app/api/tickets/${id}/messages`);
-        const result = await response.json();
+        const response = await api.get(`/tickets/${id}/messages`);
+        const result = await response.data;
 
         if (result.status === 'success' && result.data) {
           const formattedMessages = result.data.map(msg => ({
@@ -84,7 +85,7 @@ export default function TicketDetail() {
             text: msg.message_text,
             time: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }));
-          
+
           setMessages(formattedMessages);
         }
       } catch (error) {
@@ -96,16 +97,16 @@ export default function TicketDetail() {
   }, [id]);
 
   useEffect(() => {
-    const socket = io('https://helpdesk-ditsintek-backend-production.up.railway.app');
+    const socket = io();
 
     socket.on('pesan_baru', (dataPesan) => {
       if (dataPesan && (dataPesan.id_ticket === id || dataPesan.ticket_id === id)) {
         setMessages((prevMessages) => {
-          const isDuplicate = prevMessages.some(m => 
-            (m.id_message && m.id_message === dataPesan.id_message) || 
+          const isDuplicate = prevMessages.some(m =>
+            (m.id_message && m.id_message === dataPesan.id_message) ||
             (m.text === dataPesan.message_text && m.who === (dataPesan.sender_type === 'helpdesk' ? 'staff' : 'user'))
           );
-          
+
           if (isDuplicate) return prevMessages;
 
           return [...prevMessages, {
@@ -272,7 +273,7 @@ export default function TicketDetail() {
         <span className="back-link" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
           ← Kembali ke antrean
         </span>
-        
+
         <div className="detail-grid">
           {/* Thread Panel */}
           <div className="thread-panel">
@@ -290,8 +291,8 @@ export default function TicketDetail() {
               {messages.map((m, i) => {
                 const cls = m.who === 'user' ? 'user' : m.who === 'bot' ? 'bot' : 'staff';
                 return (
-                  <div 
-                    className={`msg ${cls}`} 
+                  <div
+                    className={`msg ${cls}`}
                     key={i}
                     style={cls === 'staff' ? { marginLeft: 'auto', backgroundColor: '#1E3A2B', color: '#fff' } : {}}
                   >
@@ -306,6 +307,12 @@ export default function TicketDetail() {
                 placeholder="Tulis balasan..."
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendReply();
+                  }
+                }}
               />
               <div className="reply-actions">
                 <span className="via">Terkirim sebagai pesan bot ke Telegram</span>
@@ -365,7 +372,7 @@ export default function TicketDetail() {
                       await changeStatus(baseTicket.id, newStatus);
                     } catch (err) {
                       console.error('API Error:', err);
-                      setLocalStatus(baseTicket.status); 
+                      setLocalStatus(baseTicket.status);
                     }
                   }
                 }}
@@ -392,6 +399,12 @@ export default function TicketDetail() {
                     className="status-select"
                     value={selectedAssignee}
                     onChange={(e) => setSelectedAssignee(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAssignPic();
+                      }
+                    }}
                   >
                     <option value="">Pilih PIC</option>
                     {assignableUsers.map((account) => (
