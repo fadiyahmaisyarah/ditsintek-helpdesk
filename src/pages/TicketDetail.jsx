@@ -28,11 +28,12 @@ function formatIndonesianDate(isoString) {
   }
 }
 
-// Helper untuk penyesuaian istilah role (Staff = Dosen, Tenaga Didik = Tendik)
+// Helper untuk penyesuaian istilah role
 function customRoleLabel(role) {
   const lower = String(role || '').toLowerCase();
   if (lower === 'staff' || lower === 'dosen') return 'Dosen';
   if (lower === 'tenaga didik' || lower === 'tendik') return 'Tendik';
+  if (lower === 'helpdesk' || lower === 'admin') return 'Admin'; 
   return roleLabel(role) || role;
 }
 
