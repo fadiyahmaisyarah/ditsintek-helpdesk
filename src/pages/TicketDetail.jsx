@@ -33,7 +33,8 @@ function customRoleLabel(role) {
   const lower = String(role || '').toLowerCase();
   if (lower === 'staff' || lower === 'dosen') return 'Dosen';
   if (lower === 'tenaga didik' || lower === 'tendik') return 'Tendik';
-  if (lower === 'helpdesk' || lower === 'admin') return 'Admin'; 
+  if (lower === 'helpdesk') return 'Helpdesk'; 
+  if (lower === 'admin') return 'Admin';       
   return roleLabel(role) || role;
 }
 
